@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registro de taller</title>
+<style>
+:root{--bg:#f3f4f6;--card:#fff;--tx:#14171c;--mu:#6b7280;--bd:#e5e7eb;--ac:#ea580c;--acbg:#fff7ed;--red:#dc2626;--redbg:#fef2f2;--grn:#15803d;--grnbg:#f0fdf4;--hd:#111318}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:10;background:var(--hd);color:#fff;display:flex;align-items:center;gap:8px;padding:10px 16px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:16px;display:flex;align-items:center;gap:10px;flex:1;min-width:160px}
+.brand i{width:32px;height:32px;border-radius:9px;background:var(--ac);display:grid;place-items:center;font-style:normal;font-size:17px}
+nav{display:flex;gap:4px}
+nav button{background:transparent;color:#cbd5e1;border:0;padding:8px 12px;border-radius:9px;font:inherit;cursor:pointer}
+nav button.on{color:#fff;background:#272b34}
+nav button.new{background:var(--ac);color:#fff;font-weight:600}
+main{max-width:880px;margin:0 auto;padding:16px 16px 60px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+h2{margin:6px 0 14px;font-size:22px}
+h3{margin:0 0 12px;font-size:16px;display:flex;align-items:center;gap:8px}
+.step{width:24px;height:24px;border-radius:50%;background:var(--ac);color:#fff;font-size:13px;display:grid;place-items:center;flex:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.f span{display:block;font-size:12px;color:var(--mu);margin-bottom:4px;font-weight:500}
+input,textarea{width:100%;font:inherit;color:var(--tx);background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:10px 12px;outline:none}
+input:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 3px #fed7aa}
+textarea{resize:vertical;min-height:90px}
+input.plate-in{font-size:20px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+details{margin-top:14px;border-top:1px solid var(--bd);padding-top:12px}
+summary{cursor:pointer;font-weight:600;color:var(--ac);margin-bottom:10px}
+.btn{font:inherit;border:1px solid #d1d5db;background:#fff;color:var(--tx);padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:#9ca3af}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
+.btn.danger{color:var(--red)}
+.btn.sm{padding:6px 12px;font-size:13px}
+.actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px}
+.muted{color:var(--mu)}.small{font-size:13px}
+.photos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ph{aspect-ratio:4/3;border:2px dashed #d1d5db;border-radius:12px;display:grid;place-items:center;cursor:pointer;overflow:hidden;position:relative;background:#fafafa;text-align:center;color:var(--mu);font-weight:500;padding:8px}
+.ph:hover{border-color:var(--ac);color:var(--ac)}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ph em{font-size:30px;display:block;font-style:normal}
+.ph .chg{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.65);color:#fff;font-size:12px;padding:3px 9px;border-radius:99px;z-index:2}
+.ai{margin-top:12px;padding:10px 12px;border-radius:10px;background:#f9fafb;font-size:14px}
+.ai.ok{background:var(--grnbg);color:var(--grn)}.ai.err{background:var(--redbg);color:var(--red)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #fdba74;border-top-color:var(--ac);border-radius:50%;animation:s .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes s{to{transform:rotate(360deg)}}
+.toggle{display:flex;gap:8px}
+.toggle button{flex:1;font:inherit;padding:10px;border-radius:10px;border:1px solid #d1d5db;background:#fff;cursor:pointer;font-weight:600}
+.toggle button.on.no{background:var(--grnbg);border-color:var(--grn);color:var(--grn)}
+.toggle button.on.si{background:var(--redbg);border-color:var(--red);color:var(--red)}
+.plate{display:inline-flex;align-items:stretch;border:2px solid #111;border-radius:6px;overflow:hidden;background:#fff;color:#111;font-family:"Arial Narrow",Arial,sans-serif;flex:none}
+.plate::before{content:"E";background:#1d4ed8;color:#fff;font-size:10px;font-weight:700;padding:0 4px 2px;display:flex;align-items:flex-end}
+.plate b{padding:2px 8px;font-size:17px;letter-spacing:1px}
+.plate.big b{font-size:26px;padding:4px 12px}
+.tag{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;font-weight:600;white-space:nowrap}
+.tag.in{background:var(--acbg);color:var(--ac)}.tag.out{background:var(--grnbg);color:var(--grn)}.tag.red{background:var(--redbg);color:var(--red)}
+.search{position:relative;margin-bottom:12px}
+.search input{padding:13px 14px 13px 42px;font-size:16px;border-radius:12px}
+.search::before{content:"🔍";position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px}
+.chips{display:flex;gap:8px;margin-bottom:14px}
+.chips button{font:inherit;border:1px solid #d1d5db;background:#fff;padding:7px 14px;border-radius:99px;cursor:pointer}
+.chips button.on{background:var(--hd);color:#fff;border-color:var(--hd)}
+.item{display:flex;gap:14px;align-items:center;cursor:pointer;padding:12px}
+.item:hover{border-color:var(--ac)}
+.thumb{width:84px;height:63px;border-radius:9px;background:#e5e7eb;object-fit:cover;flex:none;display:grid;place-items:center;font-size:24px}
+.item .info{flex:1;min-width:0}
+.item .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+.empty{text-align:center;padding:40px 16px}
+.empty em{font-size:46px;display:block;font-style:normal;margin-bottom:6px}
+.hist{border-color:#fdba74;background:var(--acbg)}
+.hist h3{color:#9a3412}
+.sum{background:#fff;border-radius:10px;padding:10px 12px;margin:10px 0;font-size:14px}
+.visits{list-style:none;margin:0;padding:0}
+.visits li{background:#fff;border-radius:10px;padding:10px 12px;margin-top:8px;display:grid;gap:2px}
+.visits .vd{font-size:13px;color:var(--mu);font-weight:600}
+.link{background:none;border:0;color:var(--ac);font:inherit;font-weight:600;cursor:pointer;padding:0;justify-self:start}
+.dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 16px;margin:0}
+.dl div{border-bottom:1px solid var(--bd);padding-bottom:6px}
+.dl dt{font-size:12px;color:var(--mu)}.dl dd{margin:0;font-weight:500;word-break:break-word}
+.head{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.head h2{margin:0}
+.gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.gal img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;cursor:zoom-in;background:#e5e7eb}
+.gal figure{margin:0}.gal figcaption{font-size:12px;color:var(--mu);margin-top:4px}
+.note{white-space:pre-wrap}
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.88);display:grid;place-items:center;z-index:50;cursor:zoom-out;padding:16px}
+.lb img{max-width:100%;max-height:100%;border-radius:8px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--hd);color:#fff;padding:11px 18px;border-radius:12px;opacity:0;transition:.25s;z-index:60;pointer-events:none;font-weight:500}
+#toast.show{opacity:1;transform:translateX(-50%)}
+@media(max-width:560px){.photos{grid-template-columns:1fr 1fr}nav button{padding:8px 9px;font-size:14px}.brand span{display:none}.thumb{width:64px;height:48px}}
+@media print{header,.actions,.noprint{display:none!important}body{background:#fff}.card{box-shadow:none;break-inside:avoid}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><i>🔧</i><span>Registro de taller</span></div>
+  <nav>
+    <button data-nav="list">Entradas</button>
+    <button data-nav="new" class="new">+ Nueva entrada</button>
+    <button data-nav="settings">⚙︎</button>
+  </nav>
+</header>
+<main id="app"></main>
+<div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+/* ---------- utilidades ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const normP=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const fmt=iso=>iso?new Date(iso).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+const fmtD=iso=>iso?new Date(iso).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+const short=(s,n)=>{s=String(s||'').replace(/\s+/g,' ').trim();return s.length>n?s.slice(0,n-1)+'…':s};
+const toLocalInput=iso=>{const d=iso?new Date(iso):new Date();const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`};
+const fromLocalInput=v=>v?new Date(v).toISOString():new Date().toISOString();
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2400)}
+function lightbox(src){const d=document.createElement('div');d.className='lb';d.innerHTML=`<img src="${src}">`;d.onclick=()=>d.remove();document.body.appendChild(d)}
+const store={get(k,d=''){try{return localStorage.getItem(k)??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+/* ---------- base de datos local (IndexedDB) ---------- */
+const DB={
+  db:null,
+  open(){return new Promise((res,rej)=>{const r=indexedDB.open('registroTaller',1);
+    r.onupgradeneeded=()=>{const d=r.result;d.createObjectStore('entradas',{keyPath:'id'});d.createObjectStore('fotos',{keyPath:'id'})};
+    r.onsuccess=()=>{DB.db=r.result;res()};r.onerror=()=>rej(r.error)})},
+  req(store,mode,fn){return new Promise((res,rej)=>{const q=fn(DB.db.transaction(store,mode).objectStore(store));q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})},
+  all(s){return DB.req(s,'readonly',o=>o.getAll())},
+  get(s,id){return DB.req(s,'readonly',o=>o.get(id))},
+  put(s,v){return DB.req(s,'readwrite',o=>o.put(v))},
+  del(s,id){return DB.req(s,'readwrite',o=>o.delete(id))}
+};
+let ENT=[];
+const urlCache={};
+async function photoURL(id){if(!id)return null;if(urlCache[id])return urlCache[id];const f=await DB.get('fotos',id);if(!f)return null;return urlCache[id]=URL.createObjectURL(f.blob)}
+
+/* ---------- campos ---------- */
+const PRIMARY=[['marca','Marca'],['modelo','Modelo'],['anio','Año']];
+const FICHA=[
+  ['bastidor','Bastidor (VIN) · E'],['color','Color'],['tipo','Tipo / variante / versión · D.2'],
+  ['fecha_primera_matriculacion','1ª matriculación · B'],['fecha_matriculacion','Fecha matriculación · I'],
+  ['fecha_expedicion','Fecha expedición · I.1'],['lugar_expedicion','Lugar expedición · I.2'],['validez','Periodo de validez · H'],
+  ['homologacion','Nº homologación · K'],['servicio','Servicio · D.4'],['cilindrada','Cilindrada cm³ · P.1'],
+  ['potencia','Potencia kW · P.2'],['combustible','Combustible · P.3'],['masa_max_tecnica','Masa máx. técnica kg · F.1'],
+  ['masa_max_circulacion','Masa máx. circulación kg · F.2'],['masa_servicio','Masa en servicio kg · G'],
+  ['plazas','Plazas asiento · S.1'],['plazas_pie','Plazas de pie · S.2'],['proxima_itv','Próxima ITV'],['km_documento','Km según documento'],
+  ['clasificacion','Clasificación'],['tara','Tara kg'],['neumaticos','Neumáticos'],['motor_marca','Marca del motor'],['codigo_motor','Código de motor'],
+  ['cilindros','Nº de cilindros'],['potencia_fiscal','Potencia fiscal CV'],['longitud','Longitud mm'],['anchura','Anchura mm'],['altura','Altura mm'],['fecha_ficha','Fecha de la ficha técnica']
+];
+const VKEYS=['matricula',...PRIMARY.map(x=>x[0]),...FICHA.map(x=>x[0])];
+const LABEL=Object.fromEntries([['matricula','Matrícula'],...PRIMARY,...FICHA]);
+
+/* ---------- lector OCR open source (Tesseract.js) ---------- */
+let OCRW=null,OCR_PROG=null;
+function ocrWorker(){
+  if(!window.Tesseract)return Promise.reject(new Error('no se pudo cargar el lector (la primera vez necesita internet)'));
+  if(!OCRW)OCRW=Tesseract.createWorker('spa',1,{logger:m=>{if(m.status==='recognizing text'&&OCR_PROG)OCR_PROG(m.progress)}}).catch(e=>{OCRW=null;throw e});
+  return OCRW;
+}
+async function prepImg(blob,deg=0,minSide=1600){
+  const bmp=await createImageBitmap(blob);
+  const big=Math.max(bmp.width,bmp.height);
+  const s=Math.min(2600/big,Math.max(1,minSide/big));
+  const w=Math.round(bmp.width*s),h=Math.round(bmp.height*s);
+  const rot=deg%180!==0;
+  const c=document.createElement('canvas');c.width=rot?h:w;c.height=rot?w:h;
+  const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
+  x.filter='grayscale(1) contrast(1.5)';
+  x.translate(c.width/2,c.height/2);x.rotate(deg*Math.PI/180);x.drawImage(bmp,-w/2,-h/2,w,h);
+  return c;
+}
+async function ocrText(canvas,psm,whitelist=''){
+  const w=await ocrWorker();
+  await w.setParameters({tessedit_pageseg_mode:String(psm),preserve_interword_spaces:'1',tessedit_char_whitelist:whitelist});
+  const {data}=await w.recognize(canvas);
+  return data.text||'';
+}
+
+/* matrícula española: 0000XXX (actual) o X(X)-0000-X(X) (antigua) */
+const toDig=s=>s.replace(/[OQDU]/g,'0').replace(/[IL|!T]/g,'1').replace(/Z/g,'2').replace(/S/g,'5').replace(/B/g,'8').replace(/G/g,'6').replace(/A/g,'4');
+const toLet=s=>s.replace(/8/g,'B').replace(/5/g,'S').replace(/2/g,'Z').replace(/6/g,'G').replace(/0/g,'D').replace(/1/g,'J').replace(/4/g,'A');
+function findPlate(text){
+  const T=stripEU(String(text||'').toUpperCase().replace(/[‐-―·•]/g,'-'));
+  const re=/(?<![A-Z0-9])([0-9OQDUILSZBGAT|!]{4})[\s-]{0,2}([A-Z0-9]{3})(?![A-Z0-9])/g;
+  let m;
+  while((m=re.exec(T))){const p=toDig(m[1])+toLet(m[2]);if(/^\d{4}[BCDFGHJKLMNPRSTVWXYZ]{3}$/.test(p)&&/\d/.test(m[1]))return p}
+  const old=/(?<![A-Z0-9])([A-Z]{1,2})[\s-]{0,2}(\d{4})[\s-]{0,2}([A-Z]{1,2})(?![A-Z0-9])/;
+  const o=T.match(old);if(o&&o[1][0]!=='E')return o[1]+o[2]+o[3];
+  return '';
+}
+/* la "E" de la franja azul (y las estrellas) no forma parte de la matrícula */
+function stripEU(T){return T.replace(/(^|[^A-Z0-9])[E€]\s*[-.,:*]?\s*(?=[0-9OQDILSZBG]{4}\s*-?\s*[A-Z0-9]{3}(?![A-Z0-9]))/g,'$1 ')}
+function cleanPlate(p){
+  p=normP(p);if(/^E\d{4}[BCDFGHJKLMNPRSTVWXYZ]{3}$/.test(p))p=p.slice(1);
+  return /^(\d{4}[BCDFGHJKLMNPRSTVWXYZ]{3}|[A-DF-Z][A-Z]?\d{4}[A-Z]{1,2})$/.test(p)?p:(findPlate(p)||p);
+}
+
+/* permiso de circulación / ficha técnica */
+const CODES={A:'matricula',B:'fecha_primera_matriculacion',C11:'_apellidos',C12:'_nombre',D1:'marca',D2:'tipo',D3:'modelo',D4:'servicio',E:'bastidor',F1:'masa_max_tecnica',F2:'masa_max_circulacion',G:'masa_servicio',H:'validez',I:'fecha_matriculacion',I1:'fecha_expedicion',I2:'lugar_expedicion',K:'homologacion',P1:'cilindrada',P2:'potencia',P3:'combustible',S1:'plazas',S2:'plazas_pie'};
+const fixDate=s=>{const m=String(s).match(/(\d{1,2})\s*[-\/.]\s*(\d{1,2})\s*[-\/.]\s*(\d{4})/);return m?`${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}-${m[3]}`:''};
+const firstNum=s=>{const m=String(s).replace(/(\d)[.\s](\d{3})(?!\d)/g,'$1$2').match(/\d+(?:[.,]\d+)?/);return m?m[0].replace(',','.'):''};
+function parseFicha(text){
+  const d={};
+  const lines=text.split('\n').flatMap(l=>l.split(/\s{3,}|\s(?=[\(\[]?[CDFIPS]\s?[.,]\s?\d[\)\]]?\s)/)).map(l=>l.trim()).filter(Boolean);
+  const re=/^[\(\[\{|]?\s*([ABCDEFGHIKPS])\s*[.,:]?\s*(\d)?\s*[.,:]?\s*(\d)?\s*[\)\]\}|]?\s*[:\-]?\s+(.+)$/;
+  for(const l of lines){
+    const m=l.match(re);if(!m)continue;
+    const k=CODES[m[1]+(m[2]||'')+(m[3]||'')];if(!k||d[k])continue;
+    let v=m[4].replace(/\s*[-—_–=]{3,}.*$/,'').trim();
+    if(!v||/^[-—_–=.\s]+$/.test(v))continue;
+    d[k]=v;
+  }
+  const flat=text.toUpperCase();
+  heuristics(d,text);
+  // matrícula
+  d.matricula=findPlate(d.matricula||'')||findPlate(flat);
+  // bastidor
+  const vinSrc=((d.bastidor||'').replace(/\s/g,'')+'\n'+flat).replace(/[OQ]/g,'0');
+  const vin=vinSrc.match(/(?<![A-Z0-9])[A-HJ-NPR-Z0-9]{17}(?![A-Z0-9])/);
+  d.bastidor=vin?vin[0]:(d.bastidor||'').replace(/\s/g,'');
+  // fechas
+  for(const k of ['fecha_primera_matriculacion','fecha_matriculacion','fecha_expedicion','validez'])if(d[k])d[k]=fixDate(d[k])||(k==='validez'?d[k]:'');
+  // números
+  for(const k of ['cilindrada','potencia','masa_max_tecnica','masa_max_circulacion','masa_servicio','plazas','plazas_pie'])if(d[k])d[k]=firstNum(d[k]);
+  // combustible
+  const fuel=(d.combustible||flat).match(/DI[EÉ]SEL|GASOLINA|GASOIL|EL[EÉ]CTRIC[OA]|H[IÍ]BRID[OA]|GLP|GNC/);
+  d.combustible=fuel?fuel[0].replace('É','E').replace('GASOIL','DIESEL'):(d.combustible||'');
+  // cliente
+  d.cliente=[cleanName(d._nombre),cleanName(d._apellidos)].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();delete d._nombre;delete d._apellidos;
+  // observaciones
+  const itv=flat.match(/PR[OÓ0]XIMA\s*I\.?T\.?V\.?\s*[:.]?\s*(\d{1,2}\s*[-\/.]\s*\d{1,2}\s*[-\/.]\s*\d{4})/);if(itv)d.proxima_itv=fixDate(itv[1]);
+  const km=flat.match(/KIL[OÓ0]METRAJE[^:\n]*:\s*([\d.\s]{1,10}\d)/);if(km)d.km_documento=km[1].replace(/\D/g,'');
+  // año
+  const y=(d.fecha_primera_matriculacion||d.fecha_matriculacion||'').slice(-4);if(y)d.anio=y;
+  for(const k in d)if(typeof d[k]==='string')d[k]=d[k].trim();
+  return d;
+}
+/* si el OCR pierde los códigos (A, D.1, P.1…), se deducen los datos por su forma y su orden */
+const BRANDS=['ALFA ROMEO','ASTON MARTIN','LAND ROVER','MERCEDES-BENZ','MERCEDES','ABARTH','AUDI','BMW','BYD','CITROEN','CUPRA','DACIA','DAEWOO','DAIHATSU','DODGE','DS','FERRARI','FIAT','FORD','HONDA','HYUNDAI','INFINITI','ISUZU','IVECO','JAGUAR','JEEP','KIA','LADA','LAMBORGHINI','LANCIA','LEXUS','MASERATI','MAZDA','MG','MINI','MITSUBISHI','NISSAN','OPEL','PEUGEOT','PORSCHE','RENAULT','ROVER','SAAB','SEAT','SKODA','SMART','SSANGYONG','SUBARU','SUZUKI','TESLA','TOYOTA','VOLKSWAGEN','VOLVO','PIAGGIO','YAMAHA','KAWASAKI','DUCATI','HARLEY-DAVIDSON','KTM','APRILIA','TRIUMPH','LYNK','POLESTAR','OMODA','JAECOO','MAN','SCANIA','DAF'];
+const PROVS=['A CORUÑA','ALAVA','ÁLAVA','ALBACETE','ALICANTE','ALMERIA','ALMERÍA','ASTURIAS','AVILA','ÁVILA','BADAJOZ','BALEARES','BARCELONA','BURGOS','CACERES','CÁCERES','CADIZ','CÁDIZ','CANTABRIA','CASTELLON','CASTELLÓN','CEUTA','CIUDAD REAL','CORDOBA','CÓRDOBA','CUENCA','GIRONA','GRANADA','GUADALAJARA','GUIPUZCOA','HUELVA','HUESCA','JAEN','JAÉN','LA RIOJA','LAS PALMAS','LEON','LEÓN','LLEIDA','LUGO','MADRID','MALAGA','MÁLAGA','MELILLA','MURCIA','NAVARRA','OURENSE','PALENCIA','PONTEVEDRA','SALAMANCA','SANTA CRUZ DE TENERIFE','SEGOVIA','SEVILLA','SORIA','TARRAGONA','TERUEL','TOLEDO','VALENCIA','VALLADOLID','VIZCAYA','BIZKAIA','ZAMORA','ZARAGOZA'];
+const NOT_NAME=/^(ITV|DOCUMENTO|V[AÁ]LIDO|SI|ACOMPA[ÑN]A|EN|VIGOR|PR[OÓ]XIMA|KILOMETRAJE|FECHA|OBSERVACIONES|PART|SIN|ESPECIFICAR|DIESEL|DI[EÉ]SEL|GASOLINA|DEL|LOS|LAS)$/;
+function cleanName(s){return String(s||'').toUpperCase().replace(/[^A-ZÁÉÍÓÚÑÜ ]/g,' ').split(/\s+/).filter(w=>w.length>=3&&!NOT_NAME.test(w)&&!PROVS.includes(w)&&!BRANDS.includes(w)).join(' ')}
+function heuristics(d,text){
+  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const U=text.toUpperCase();
+  const obsL=lines.filter(l=>/ITV|KILOMETRAJE|DOCUMENTO|OBSERVAC/i.test(l));const obs=obsL.join(' ');
+  // fechas fuera de las observaciones
+  const dates=[...lines.filter(l=>!obsL.includes(l)).join('\n').matchAll(/(\d{1,2})\s*[-\/.]\s*(\d{1,2})\s*[-\/.]\s*((?:19|20)\d{2})/g)].map(m=>({s:fixDate(m[0]),v:+m[3]*1e4+ +m[2]*100+ +m[1]})).sort((a,b)=>a.v-b.v);
+  const uniq=[...new Map(dates.map(x=>[x.s,x])).values()];
+  if(uniq.length&&!d.fecha_expedicion&&uniq.length>1)d.fecha_expedicion=uniq[uniq.length-1].s;
+  const rest=uniq.filter(x=>x.s!==d.fecha_expedicion);
+  if(rest.length>=2){if(!d.fecha_primera_matriculacion)d.fecha_primera_matriculacion=rest[0].s;if(!d.fecha_matriculacion)d.fecha_matriculacion=rest[1].s}
+  else if(rest.length===1&&!d.fecha_matriculacion&&!d.fecha_primera_matriculacion)d.fecha_matriculacion=rest[0].s;
+  // homologación, tipo, servicio
+  if(!d.homologacion){const m=U.match(/E\s?\d{1,2}\s?\*\s?[\dA-Z\/]+\s?\*\s?\d{3,5}(?:\s?\*\s?\d{1,3})?/);if(m)d.homologacion=m[0].replace(/\s/g,'')}
+  if(!d.tipo){const m=U.match(/(?<![A-Z0-9])[A-Z0-9]{1,6}\/[A-Z0-9]{2,10}\/[A-Z0-9]{2,12}(?![A-Z0-9])/);if(m)d.tipo=m[0]}
+  if(!d.servicio){const m=U.match(/[A-Z]{2,5}\s?[-=]\s?SIN ESPECIFICAR|SIN ESPECIFICAR|ALQUILER[A-Z ]*|TAXI[A-Z ]*/);if(m)d.servicio=m[0].replace('=','-').replace(/\s?-\s?/,'-')}
+  // marca y lugar
+  const wordIn=(list)=>{for(const w of list){const re=new RegExp('(?<![A-ZÁÉÍÓÚÑ])'+w.replace(/[-]/g,'[- ]?')+'(?![A-ZÁÉÍÓÚÑ])');if(re.test(U))return w}return ''};
+  if(!d.marca)d.marca=wordIn(BRANDS);
+  if(!d.lugar_expedicion)d.lugar_expedicion=wordIn(PROVS);
+  // líneas de texto en mayúsculas (sin números), en el orden de lectura
+  const skip=new RegExp(['DI[EÉ]SEL','GASOLINA','EL[EÉ]CTRIC','H[IÍ]BRID','SIN ESPECIFICAR','PART'].join('|'));
+  const alpha=lines.map(l=>l.split(/\s{2,}|\|/).map(s=>s.replace(/\S*\d\S*/g,'').replace(/[^A-ZÁÉÍÓÚÑÜ\s-]/g,'').replace(/\s+/g,' ').trim())).flat()
+    .filter(s=>s.length>=3&&s===s.toUpperCase()&&/[A-Z]{3}/.test(s)&&!skip.test(s));
+  const iProv=alpha.findIndex(s=>d.lugar_expedicion&&s.includes(d.lugar_expedicion));
+  const iBrand=alpha.findIndex(s=>d.marca&&s.includes(d.marca));
+  const isBad=s=>(d.marca&&s.includes(d.marca))||(d.lugar_expedicion&&s.includes(d.lugar_expedicion))||/^[A-Z]$/.test(s);
+  if(!d._apellidos&&!d._nombre&&iProv>=0){
+    const names=alpha.slice(iProv+1,iBrand>iProv?iBrand:iProv+4).filter(s=>!isBad(s)).map(cleanName).filter(Boolean);
+    if(names[0])d._apellidos=names[0];if(names[1])d._nombre=names[1];
+  }
+  if(!d.modelo&&iBrand>=0){const m=alpha.slice(iBrand+1).find(s=>!isBad(s)&&s!==d._nombre&&s!==d._apellidos&&s.length>=2);if(m)d.modelo=m}
+  // números sueltos (masas, cilindrada, potencia, plazas)
+  const nums=[];for(const l of lines){if(obs.includes(l))continue;for(const m of l.replace(/\d{1,2}\s*[-\/.]\s*\d{1,2}\s*[-\/.]\s*\d{4}/g,' ').replace(/[A-Z0-9]{17}/g,' ').replace(/E\d*\*\S+/g,' ').matchAll(/(?<![\w\/*.,])(\d{1,4}(?:[.,]\d)?)(?![\w\/*])/g))nums.push(m[1])}
+  const ints=nums.filter(n=>/^\d{3,4}$/.test(n)).map(Number);
+  if(!d.potencia){const m=nums.find(n=>/^\d{2,3}[.,]\d$/.test(n));if(m)d.potencia=m.replace(',','.')}
+  if(ints.length>=4&&!d.masa_max_tecnica&&!d.cilindrada){[d.masa_max_tecnica,d.masa_max_circulacion,d.masa_servicio,d.cilindrada]=ints.slice(0,4).map(String)}
+  else if(!d.cilindrada){const c=ints.find(n=>n>=49&&n<=8000&&!/^(19|20)\d\d$/.test(n));if(c&&ints.length===1)d.cilindrada=String(c)}
+  if(!d.plazas){const m=lines.find(l=>/^\s*[1-9]\s*$/.test(l));if(m)d.plazas=m.trim()}
+}
+const score=d=>Object.entries(d).filter(([k,v])=>v&&k!=='anio').length;
+
+/* ---------- visión: localizar la placa y limpiar documentos ---------- */
+function mkCanvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
+function drawScaled(src,sx,sy,sw,sh,dw,dh,deg=0){
+  const rot=deg%180!==0;const c=mkCanvas(rot?dh:dw,rot?dw:dh);const x=c.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.imageSmoothingQuality='high';
+  x.translate(c.width/2,c.height/2);x.rotate(deg*Math.PI/180);x.drawImage(src,sx,sy,sw,sh,-dw/2,-dh/2,dw,dh);return c;
+}
+function otsu(hist,total){let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let sB=0,wB=0,best=0,t=128;
+  for(let i=0;i<256;i++){wB+=hist[i];if(!wB)continue;const wF=total-wB;if(!wF)break;sB+=i*hist[i];const mB=sB/wB,mF=(sum-sB)/wF,v=wB*wF*(mB-mF)**2;if(v>best){best=v;t=i}}return t}
+/* binariza: modo 'otsu' (placas), número = umbral fijo sobre el canal más oscuro, 'adapt' = local */
+function binarize(c,mode){
+  const x=c.getContext('2d'),W=c.width,H=c.height,im=x.getImageData(0,0,W,H),d=im.data,N=W*H;
+  const g=new Float32Array(N);
+  for(let i=0,j=0;i<N;i++,j+=4)g[i]=mode==='otsu'?0.299*d[j]+0.587*d[j+1]+0.114*d[j+2]:(String(mode)[0]==='x'?Math.max(d[j],d[j+1],d[j+2]):Math.min(d[j],d[j+1],d[j+2]));
+  let thr=null,loc=null;
+  if(mode==='otsu'){const h=new Array(256).fill(0);for(let i=0;i<N;i++)h[g[i]|0]++;thr=otsu(h,N)}
+  else if(mode==='adapt'){ // media local con imagen integral
+    const I=new Float64Array((W+1)*(H+1));for(let y=0;y<H;y++){let r=0;for(let xx=0;xx<W;xx++){r+=g[y*W+xx];I[(y+1)*(W+1)+xx+1]=I[y*(W+1)+xx+1]+r}}
+    const R=Math.max(8,Math.round(Math.min(W,H)/40));loc=(xx,y)=>{const x0=Math.max(0,xx-R),x1=Math.min(W,xx+R),y0=Math.max(0,y-R),y1=Math.min(H,y+R);
+      return (I[y1*(W+1)+x1]-I[y0*(W+1)+x1]-I[y1*(W+1)+x0]+I[y0*(W+1)+x0])/((x1-x0)*(y1-y0))}}
+  else thr=parseFloat(String(mode).replace('x',''));
+  for(let y=0;y<H;y++)for(let xx=0;xx<W;xx++){const i=y*W+xx,j=i*4;
+    const v=loc?(g[i]<loc(xx,y)-30&&g[i]<170):g[i]<thr;const o=v?0:255;d[j]=d[j+1]=d[j+2]=o;d[j+3]=255}
+  if(mode!=='otsu'){ // filtro de mayoría 3x3: quita puntos sueltos del fondo
+    const o=new Uint8Array(N);for(let i=0;i<N;i++)o[i]=d[i*4]?0:1;
+    for(let y=1;y<H-1;y++)for(let xx=1;xx<W-1;xx++){const i=y*W+xx;let s=0;for(let dy=-W;dy<=W;dy+=W)s+=o[i+dy-1]+o[i+dy]+o[i+dy+1];const v=s>=5?0:255;const j=i*4;d[j]=d[j+1]=d[j+2]=v}}
+  x.putImageData(im,0,0);return c;
+}
+function padCanvas(c,p){const o=mkCanvas(c.width+2*p,c.height+2*p),x=o.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,o.width,o.height);x.drawImage(c,p,p);return o}
+
+/* busca rectángulos blancos alargados con texto oscuro (la placa) */
+function plateBoxes(bmp){
+  const W=Math.min(900,bmp.width),s=W/bmp.width,H=Math.round(bmp.height*s);
+  const c=drawScaled(bmp,0,0,bmp.width,bmp.height,W,H);const d=c.getContext('2d').getImageData(0,0,W,H).data,N=W*H;
+  const L=new Uint8Array(N),SAT=new Uint8Array(N),BL=new Uint8Array(N);
+  for(let i=0,j=0;i<N;i++,j+=4){const r=d[j],g=d[j+1],b=d[j+2];L[i]=(0.299*r+0.587*g+0.114*b)|0;SAT[i]=Math.max(r,g,b)-Math.min(r,g,b);BL[i]=(b>r+35&&b>g+10)?1:0}
+  const out=[];
+  for(const T of [150,120,180,95]){
+    const lab=new Int32Array(N),st=new Int32Array(N);let id=0;
+    for(let p0=0;p0<N;p0++){
+      if(lab[p0]||L[p0]<T||SAT[p0]>70)continue;
+      id++;let sp=0,cnt=0,x0=W,x1=0,y0=H,y1=0,sx=0,sy=0,sxx=0,syy=0,sxy=0;st[sp++]=p0;lab[p0]=id;
+      while(sp){const p=st[--sp],x=p%W,y=(p/W)|0;cnt++;sx+=x;sy+=y;sxx+=x*x;syy+=y*y;sxy+=x*y;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;
+        for(const q of [p-1,p+1,p-W,p+W]){if(q<0||q>=N)continue;if((q===p-1&&x===0)||(q===p+1&&x===W-1))continue;
+          if(!lab[q]&&L[q]>=T&&SAT[q]<=70){lab[q]=id;st[sp++]=q}}}
+      const w=x1-x0+1,h=y1-y0+1,ar=w/h,fill=cnt/(w*h);
+      if(w<W*0.06||h<8||w>W*0.95||ar<1.8||ar>9||fill<0.3)continue;
+      // texto oscuro dentro y cambios claro/oscuro en la franja central
+      let dark=0;for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(L[y*W+x]<T-40)dark++;
+      const dr=dark/(w*h);if(dr<0.04||dr>0.6)continue;
+      let tr=0;for(const fy of [0.4,0.5,0.6]){const y=Math.round(y0+h*fy);let prev=null;for(let x=x0;x<=x1;x++){const v=L[y*W+x]<T-40;if(prev!==null&&v!==prev)tr++;prev=v}}
+      tr/=3;if(tr<8)continue;
+      let blue=0;const bx0=Math.max(0,Math.round(x0-0.15*w)),bx1=Math.round(x0+0.12*w);
+      for(let y=y0;y<=y1;y++)for(let x=bx0;x<=bx1;x++)blue+=BL[y*W+x];
+      const hasBlue=blue>h*w*0.01;
+      const score=Math.min(tr,30)/10+fill+(hasBlue?1.5:0)+Math.min(w/W,0.4)*3-(Math.abs(ar-4.5)>2.5?0.6:0);
+      const mx=sx/cnt,my=sy/cnt,cxx=sxx/cnt-mx*mx,cyy=syy/cnt-my*my,cxy=sxy/cnt-mx*my;
+      const ang=0.5*Math.atan2(2*cxy,cxx-cyy),tr2=cxx+cyy,dt=Math.sqrt(Math.max(0,(cxx-cyy)**2/4+cxy*cxy));
+      const len=Math.sqrt(12*(tr2/2+dt)),thk=Math.sqrt(12*Math.max(1,tr2/2-dt));
+      out.push({x:x0/s,y:y0/s,w:w/s,h:h/s,score,blue:hasBlue,cx:mx/s,cy:my/s,ang,len:len/s,thk:thk/s});
+    }
+  }
+  out.sort((a,b)=>b.score-a.score);
+  const res=[];for(const b of out){if(res.some(r=>Math.abs(r.x-b.x)<r.w*0.3&&Math.abs(r.y-b.y)<r.h*0.5))continue;res.push(b);if(res.length>=4)break}
+  return res;
+}
+function plateCrops(bmp,b){
+  const crops=[];
+  const make=(cut)=>{
+    let full;
+    if(Math.abs(b.ang)>0.02&&b.len){ // endereza la placa si la foto está torcida
+      const L=b.len*1.04,T=b.thk*1.1,k=150/T;full=mkCanvas(Math.round(L*k),150);const x=full.getContext('2d');
+      x.fillStyle='#fff';x.fillRect(0,0,full.width,full.height);x.imageSmoothingQuality='high';
+      x.translate(full.width/2,full.height/2);x.scale(k,k);x.rotate(-b.ang);x.drawImage(bmp,-b.cx,-b.cy);
+    }else{
+      const px=b.w*0.02,py=b.h*0.05,sx=Math.max(0,b.x-px),sy=Math.max(0,b.y-py),sw=Math.min(bmp.width-sx,b.w+2*px),sh=Math.min(bmp.height-sy,b.h+2*py);
+      const k=150/sh;full=drawScaled(bmp,sx,sy,sw,sh,Math.round(sw*k),150);
+    }
+    let c=0;
+    if(cut){ // solo se recorta la franja azul si está dentro del recorte
+      const sw=Math.round(full.width*0.13),px=full.getContext('2d').getImageData(0,0,sw,full.height).data;let bl=0;
+      for(let j=0;j<px.length;j+=4)if(px[j+2]>px[j]+35&&px[j+2]>px[j+1]+10)bl++;
+      let last=0;if(bl>sw*full.height*0.08){for(let xx=0;xx<sw;xx++){let col=0;for(let y=0;y<full.height;y+=3){const j=(y*sw+xx)*4;if(px[j+2]>px[j]+35)col++}if(col>full.height/9)last=xx}c=last+3}
+    }
+    binarize(full,'otsu');
+    if(!cut||!c)return padCanvas(full,30);const nb=mkCanvas(full.width-c,full.height);nb.getContext('2d').drawImage(full,-c,0);return padCanvas(nb,30);
+  };
+  return [make(false),make(true)];
+}
+
+/* ---------- ficha técnica (tarjeta ITV) ---------- */
+function lev(a,b){const m=a.length,n=b.length;const d=Array.from({length:m+1},(_,i)=>[i]);for(let j=1;j<=n;j++)d[0][j]=j;
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n]}
+function fuzzyBrand(s){
+  const t=String(s||'').toUpperCase().replace(/[^A-Z\- ]/g,'').trim();if(t.length<2)return '';
+  let best='',bd=9;for(const b of BRANDS){for(const w of [t,t.split(' ')[0]]){const dd=lev(w,b);const lim=b.length<=4?1:Math.ceil(b.length*0.35);if(dd<=lim&&dd<bd){bd=dd;best=b}}}
+  return best;
+}
+const MODELS='IBIZA LEON TOLEDO ALTEA ARONA ATECA TARRACO CORDOBA ALHAMBRA EXEO FORMENTOR BORN CLIO MEGANE LAGUNA SCENIC KANGOO CAPTUR KADJAR TWINGO FLUENCE TALISMAN ESPACE MODUS AUSTRAL ARKANA TRAFIC GOLF POLO PASSAT TOURAN TIGUAN TOUAREG CADDY TRANSPORTER JETTA BORA PHAETON SCIROCCO SHARAN ARTEON BERLINGO XSARA SAXO PICASSO CORSA ASTRA ZAFIRA VECTRA INSIGNIA MERIVA MOKKA CROSSLAND GRANDLAND COMBO VIVARO FOCUS FIESTA MONDEO KUGA TRANSIT PUMA ECOSPORT GALAXY COROLLA YARIS AURIS PRIUS AVENSIS HILUX QASHQAI JUKE MICRA NOTE PRIMERA ALMERA NAVARA LEAF SANDERO LOGAN DUSTER JOGGER LODGY DOKKER SPRING FABIA OCTAVIA SUPERB KAROQ KODIAQ KAMIQ SCALA RAPID YETI TUCSON KONA PICANTO CEED SPORTAGE SORENTO NIRO STONIC CIVIC ACCORD JAZZ PANDA PUNTO DOBLO DUCATO BRAVO SWIFT VITARA JIMNY OUTLANDER MONTERO COOPER PARTNER EXPERT BOXER JUMPER JUMPY MASTER VITO SPRINTER CRAFTER MULTIVAN'.split(' ');
+function fixModel(s){
+  s=String(s||'').toUpperCase().split(/\s(?:V[IÍ1]A\b|ANCH|ALTUR|LONG)|\|/)[0];
+  const disp=(s.match(/(?<!\d)([0-9])\s?[.,]\s?([0-9])(?!\d)/)||[]).slice(1).join('.');
+  const letters=s.replace(/[^A-Z ]/g,' ').replace(/\s+/g,' ').trim();
+  const cands=[];const w=letters.split(' ').filter(Boolean);
+  for(let i=0;i<w.length;i++){cands.push(w[i]);if(w[i+1])cands.push(w[i]+w[i+1])}
+  let best='',bd=9;for(const c of cands){if(c.length<3)continue;for(const m of MODELS){const dd=lev(c,m);if(dd<=Math.floor(m.length*0.4)&&dd<bd){bd=dd;best=m}}}
+  if(!best)return '';
+  return best+(disp&&+disp[0]>0?' '+disp:'');
+}
+const MESES=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+const isFichaITV=t=>(t.toUpperCase().match(/MTMA|NEUM[AÁ]TIC|DENOMINACI|VARIANTE|TARA\s*\(|CILINDRADA|ASIENTOS|CONTRASE/g)||[]).length>=2;
+const digitsFix=s=>String(s).replace(/[OoQD]/g,'0').replace(/[Il|!]/g,'1').replace(/[Ss]/g,'5').replace(/[Bß]/g,'8').replace(/:/g,'');
+function parseFichaITV(text){
+  const d={};
+  const segs=text.split('\n').flatMap(l=>l.split(/\s\|\s?|\s?\|\s|\s{3,}/)).map(s=>s.trim()).filter(Boolean);
+  const U=segs.map(s=>s.toUpperCase());
+  const val=(re,i=1)=>{for(const s of U){const m=s.match(re);if(m&&m[i])return m[i].trim()}return ''};
+  // marca del vehículo (no la del motor)
+  for(const s of U){if(/MOTOR/.test(s))continue;const m=s.match(/^\W*MAR[CG][AEO]\s*[:;.,]?\s*(.+)$/);if(m){const b=fuzzyBrand(m[1]);if(b){d.marca=b;break}}}
+  for(const s of U){const m=s.match(/MOTOR\W*MAR[CG][AEO]\s*[:;.,]?\s*(.+)$/);if(m){const b=fuzzyBrand(m[1]);if(b){d.motor_marca=b;break}}}
+  // tipo / variante / denominación
+  let v=val(/VARIANTE\s*[:;.,]?\s*([A-Z0-9][A-Z0-9\-=]{5,})/);if(v)d.tipo=v.replace(/=/g,'-');
+  const tp=val(/^\W*TIPO\s*[:;.,]?\s*([A-Z0-9]{2,4})(?:\W|$)/);if(tp&&/\d/.test(tp)&&/[A-Z]/.test(tp))d.tipo=(tp+(d.tipo?' / '+d.tipo:''));
+  const den=val(/DENOMINACI\S*\s*COMER\S*\s*(.+)$/);if(den){const m=fixModel(den);if(m)d.modelo=m}
+  // pesos
+  let t=val(/TARA\D*?(\d[\d:.\s]{2,6}\d)/);if(t){t=t.replace(/\D/g,'');if(t.length>=3&&t.length<=4)d.tara=t}
+  for(const s of U){if(!/MTMA|MMA/.test(s))continue;if(/\d\s*[º°?*%235O0]?\s*E\b/.test(s.replace(/\(.*$/,'')))continue;
+    const m=s.replace(/\(K[GQ][^\d]*/,' ').replace(/(\d)[.,](\d)/g,'$1$2').match(/(?<![\d\/])(\d{3,4})(?![\d\/])/);if(m&&+m[1]>=400&&+m[1]<=4500){d.masa_max_tecnica=m[1];break}}
+  // neumáticos
+  for(const s of U){if(!/NEUM/.test(s))continue;const c=s.replace(/NEUM\S*/,'').replace(/\s/g,'');
+    const m=c.replace(/R1S/g,'R15').replace(/:/g,'').match(/(\d{3})\/(\d{2})R?(\d{2})(\d{2,3}[A-Z])?/);
+    if(m&&+m[1]>=135&&+m[1]<=335&&+m[1]%5===0&&+m[2]>=25&&+m[2]<=85&&+m[2]%5===0&&+m[3]>=12&&+m[3]<=23)d.neumaticos=`${m[1]}/${m[2]} R${m[3]}${m[4]?' '+m[4]:''}`;break}
+  // asientos
+  for(const s of U){if(!/ASIENTOS/.test(s))continue;const r=s.split('ASIENTOS')[1].replace(/\d\s*\/\s*\d+/g,'');const m=r.match(/([1-9])(?!.*[1-9])/);if(m)d.plazas=m[1];break}
+  // cilindros / cilindrada
+  for(const s of U){if(!/CILIND/.test(s))continue;const c=s.replace(/\(.*?\)/g,' ').replace(/CM[3³]/g,'');
+    const m=c.replace(/\s+/g,'').match(/(\d)?\/(\d{3,5})(?!\d)/);if(m){const cc=+m[2].slice(-4);if(cc>=600&&cc<=7000){if(m[1]&&+m[1]>=2&&+m[1]<=8)d.cilindros=m[1];d.cilindrada=String(cc)}}break}
+  // potencia fiscal / real
+  for(const s of U){if(!/POTENCIA|FISCAL/.test(s))continue;const c=s.replace(/\(.*?\)/g,' ').replace(/\s+/g,'');
+    const m=c.match(/(\d{1,2}[,.\/]\d{1,2})\/(\d{2,3})(?!\d)/);if(m){d.potencia_fiscal=m[1].replace(/[.\/]/,',');d.potencia=m[2]}break}
+  // motor
+  const mc=val(/\(\s*[A-Z0-9]\s*\)\s*([A-Z0-9]{3,4})\b/);if(mc)d.codigo_motor=mc;
+  // dimensiones
+  const dim=(re,lo,hi)=>{const x=val(re);const n=x?x.replace(/\D/g,''):'';return n&&+n>=lo&&+n<=hi?n:''};
+  const al=dim(/ALTURA\D*(\d[\d\s]{3,5})/,1000,3500),an=dim(/ANCHURA\D*(\d[\d\s]{3,5})/,1400,2600),lo=dim(/LONGITUD\D*(\d[\d\s]{3,5})/,2500,6500);
+  if(al)d.altura=al;if(an)d.anchura=an;if(lo)d.longitud=lo;
+  // bastidor
+  const full=text.toUpperCase();
+  const vin=full.replace(/[OQ]/g,'0').match(/(?<![A-Z0-9])[A-HJ-NPR-Z0-9]{17}(?![A-Z0-9])/);if(vin)d.bastidor=vin[0];
+  // contraseña de homologación
+  const h=full.replace(/\s/g,'').match(/E\d{1,2}\*\d{2,4}\/\d{2,3}\*\d{4}(?:\*\d{1,3})?/);if(h)d.homologacion=h[0].replace(/^E/,'e');
+  // fecha de la ficha
+  for(const s of U){const m=s.match(/(\d{1,2})\D{0,8}?(ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE)\D{0,12}?\d?((?:19|20)\d{2})/);
+    if(m&&+m[1]>=1&&+m[1]<=31){d.fecha_ficha=`${m[1].padStart(2,'0')}-${String(MESES.indexOf(m[2])+1).padStart(2,'0')}-${m[3]}`;break}
+    const m2=s.match(/(ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE)\D{0,12}?\d?((?:19|20)\d{2})/);if(m2&&!d.fecha_ficha)d.fecha_ficha=`${String(MESES.indexOf(m2[1])+1).padStart(2,'0')}-${m2[2]}`}
+  if(d.fecha_ficha)d.anio=d.fecha_ficha.slice(-4);
+  const cl=full.match(/\b(TURISMO|FURG[OÓ]N|TODO TERRENO|CAMI[OÓ]N|MOTOCICLETA|CICLOMOTOR|MIXTO)\b/);if(cl)d.clasificacion=cl[1];
+  const fuel=full.match(/DI[EÉ]SEL|GASOLINA|GASOIL|EL[EÉ]CTRIC[OA]|H[IÍ]BRID[OA]/);if(fuel)d.combustible=fuel[0].replace('É','E');
+  else if(/\(\s*[G6]\s*\)\s*[A-Z0-9]{3}/.test(full))d.combustible='GASOLINA';else if(/\(\s*D\s*\)/.test(full))d.combustible='DIESEL';
+  return d;
+}
+
+/* ---------- validación y combinación de lecturas ---------- */
+const numIn=(a,b)=>v=>{const n=parseFloat(String(v).replace(',','.'));return n>=a&&n<=b?String(v):''};
+const VALID={
+  matricula:v=>/^(\d{4}[BCDFGHJKLMNPRSTVWXYZ]{3}|[A-Z]{1,2}\d{4}[A-Z]{1,2})$/.test(v)?v:'',
+  marca:v=>fuzzyBrand(v),motor_marca:v=>fuzzyBrand(v),
+  modelo:v=>fixModel(v)||(/^[A-Z0-9][A-Z0-9 .\-]{3,24}$/.test(v)&&(v.match(/[A-Z]/g)||[]).length>=4?v:''),
+  cliente:v=>/^[A-ZÁÉÍÓÚÑÜ]{2,}(?: [A-ZÁÉÍÓÚÑÜ]{2,})+$/.test(v)?v:'',
+  bastidor:v=>/^[A-HJ-NPR-Z0-9]{17}$/.test(v)?v:'',
+  lugar_expedicion:v=>PROVS.includes(v)?v:'',
+  servicio:v=>/SIN ESPECIFICAR|ALQUILER|TAXI|P[UÚ]BLIC|AUTOESCUELA|AMBULANCIA/.test(v)?v.replace(/\s+[A-Z]$/,''):'',
+  tipo:v=>v.length>=2&&v.length<=32&&/[A-Z]/.test(v)&&/\d/.test(v)?v:'',
+  homologacion:v=>/\*/.test(v)?v:'',
+  cilindrada:numIn(49,8000),potencia:numIn(3,700),cilindros:numIn(1,16),plazas:numIn(1,9),plazas_pie:numIn(0,120),
+  masa_max_tecnica:numIn(200,60000),masa_max_circulacion:numIn(200,60000),masa_servicio:numIn(200,60000),tara:numIn(200,60000),
+  km_documento:numIn(1,3000000),
+};
+for(const k of ['fecha_primera_matriculacion','fecha_matriculacion','fecha_expedicion','proxima_itv','fecha_ficha'])VALID[k]=v=>/^(\d{2}-)?\d{2}-(19|20)\d{2}$/.test(v)?v:'';
+function mergeReads(list){
+  const votes={};
+  for(const d of list)for(let [k,v] of Object.entries(d)){
+    if(k==='avisos'||k==='anio'||v==null)continue;v=String(v).trim();if(VALID[k])v=VALID[k](v)||'';if(!v)continue;
+    (votes[k]=votes[k]||new Map()).set(v,((votes[k].get(v))||0)+1);
+  }
+  const out={};
+  for(const k in votes){
+    const e=[...votes[k].entries()];const top=Math.max(...e.map(x=>x[1]));
+    const tied=e.filter(x=>x[1]===top);
+    if(tied.length===1){out[k]=tied[0][0];continue}
+    // empate: el valor más parecido al resto (los errores del OCR no suelen coincidir)
+    let best=tied[0][0],bd=Infinity;for(const [v] of tied){let s=0;for(const [w,c] of e)s+=lev(v,w)*c;if(s<bd){bd=s;best=v}}
+    out[k]=best;
+  }
+  const y=(out.fecha_primera_matriculacion||out.fecha_matriculacion||out.fecha_ficha||'').slice(-4);if(y)out.anio=y;
+  return out;
+}
+
+/* ---------- lectura de las fotos ---------- */
+function plateFromLine(text){
+  const T=stripEU(String(text||'').toUpperCase());
+  const m=T.match(/(\d{4,})\s?([BCDFGHJKLMNPRSTVWXYZ]{3})(?![A-Z0-9])/);if(m)return m[1].slice(-4)+m[2];
+  const o=T.match(/(?<![A-Z0-9])([A-Z]{1,2})\s?-?\s?(\d{4})\s?-?\s?([A-Z]{1,2})(?![A-Z0-9])/);if(o&&o[1][0]!=='E')return o[1]+o[2]+o[3];
+  return findPlate(T);
+}
+async function readVehiclePlate(blob,onStatus){
+  const bmp=await createImageBitmap(blob);
+  onStatus('Buscando la placa en la foto…');
+  const boxes=plateBoxes(bmp);
+  const WL='0123456789BCDFGHJKLMNPRSTVWXYZ ',WL2='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ';
+  let i=0;const seen={};
+  for(const b of boxes.slice(0,3)){
+    i++;const [full,noBlue]=plateCrops(bmp,b);
+    for(const [c,psm,wl] of [[noBlue,7,WL],[full,7,WL],[noBlue,8,WL2]]){
+      onStatus(`Leyendo la matrícula (zona ${i} de ${Math.min(3,boxes.length)})…`);
+      const p=plateFromLine(await ocrText(c,psm,wl));
+      if(p){seen[p]=(seen[p]||0)+1;if(seen[p]>=2)return p}
+    }
+    const got=Object.keys(seen);if(got.length)return mergeReads(got.flatMap(p=>Array(seen[p]).fill({matricula:p}))).matricula||got[0];
+  }
+  // sin placa localizada: se lee la foto entera
+  onStatus('Leyendo la matrícula en toda la foto…');
+  OCR_PROG=p=>onStatus(`Leyendo la matrícula en toda la foto… ${Math.round(p*100)}%`);
+  const k=Math.min(1,2400/Math.max(bmp.width,bmp.height));
+  const c=binarize(drawScaled(bmp,0,0,bmp.width,bmp.height,Math.round(bmp.width*k),Math.round(bmp.height*k)),'otsu');
+  return findPlate(await ocrText(c,11));
+}
+function docCanvas(bmp,deg,mode){
+  const k=2400/Math.max(bmp.width,bmp.height);
+  const c=drawScaled(bmp,0,0,bmp.width,bmp.height,Math.round(bmp.width*k),Math.round(bmp.height*k),deg);
+  if(mode==='gray'){const x=c.getContext('2d');const o=mkCanvas(c.width,c.height),y=o.getContext('2d');y.filter='grayscale(1) contrast(1.5)';y.drawImage(c,0,0);return o}
+  return binarize(c,mode);
+}
+const DOC_WORDS=/DOCUMENTO|V[AÁ]LIDO|I\.?T\.?V|KILOMETRAJE|PR[OÓ]XIMA|OBSERVACIONES|MARCA|VARIANTE|DENOMINACI|COMERCIAL|TARA|NEUM[AÁ]TICOS|ASIENTOS|CILIND|POTENCIA|TURISMO|DI[EÉ]SEL|GASOLINA|ALTURA|ANCHURA|LONGITUD|HOMOLOGA|VEH[IÍ]CULO|ESPECIFICAR|FIRMA/g;
+const kwHits=t=>{const U=t.toUpperCase();const s=new Set(U.match(DOC_WORDS)||[]);for(const b of BRANDS)if(b.length>=4&&U.includes(b))s.add(b);for(const p of PROVS)if(p.length>=5&&U.includes(p))s.add(p);return s.size};
+const docScore=t=>kwHits(t)*2+Math.max(score(mergeReads([parseFicha(t)])),score(mergeReads([parseFichaITV(t)])))*0.5;
+async function readDocument(blob,onStatus){
+  const bmp=await createImageBitmap(blob);
+  // 1) orientación
+  let bestDeg=0,bestS=-1,firstText='';
+  for(const deg of [0,90,270,180]){
+    const lbl=deg?`Leyendo la ficha (probando girada ${deg}°)…`:'Leyendo la ficha…';
+    OCR_PROG=p=>onStatus(`${lbl} ${Math.round(p*100)}%`);onStatus(lbl);
+    const t=await ocrText(docCanvas(bmp,deg,130),6);const s=docScore(t);
+    if(s>bestS){bestS=s;bestDeg=deg;firstText=t}
+    if(kwHits(t)>=4)break;
+  }
+  // 2) varias lecturas con distintos filtros y se combinan
+  const texts=[firstText];
+  const passes=[[130,4],['gray',3],[110,4]];
+  let n=1;
+  for(const [mode,psm] of passes){
+    n++;const lbl=`Afinando la lectura (pasada ${n} de ${passes.length+1})…`;
+    OCR_PROG=p=>onStatus(`${lbl} ${Math.round(p*100)}%`);onStatus(lbl);
+    texts.push(await ocrText(docCanvas(bmp,bestDeg,mode),psm));
+  }
+  OCR_PROG=null;
+  const itv=texts.filter(isFichaITV).length>texts.length/2;
+  const reads=texts.map(t=>itv?parseFichaITV(t):parseFicha(t));
+  const out=mergeReads(reads);
+  if(!out.matricula&&!itv){const c=texts.map(findPlate).filter(Boolean);if(c.length)out.matricula=mergeReads(c.map(m=>({matricula:m}))).matricula||''}
+  out._score=score(out);out._tipo=itv?'ficha técnica':'permiso de circulación';
+  return out;
+}
+/* ---------- lectura con IA: Gemini (plan gratuito de Google AI Studio) ---------- */
+const GEM='https://generativelanguage.googleapis.com/v1beta';
+const gemKey=()=>store.get('tr_gkey');
+async function gemFetch(path,opt={}){
+  const r=await fetch(GEM+path,{...opt,headers:{'content-type':'application/json','x-goog-api-key':gemKey(),...(opt.headers||{})}});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){const e=new Error(j?.error?.message||('Error '+r.status));e.status=r.status;throw e}
+  return j;
+}
+/* elige el modelo Flash más reciente disponible para la clave */
+async function gemModels(){
+  const j=await gemFetch('/models?pageSize=200');
+  const ok=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace(/^models\//,''));
+  const ver=n=>parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/)||[])[1]||0);
+  const bad=/image|tts|audio|live|embed|vision|thinking|exp|learnlm|gemma|robotics|computer|native/;
+  const flash=ok.filter(n=>/gemini-.*flash/.test(n)&&!bad.test(n)).sort((a,b)=>(ver(b)-ver(a))||(/preview/.test(a)-/preview/.test(b))||(/lite/.test(a)-/lite/.test(b))||(a.length-b.length));
+  return flash.length?flash:ok.filter(n=>/gemini/.test(n)&&!bad.test(n));
+}
+async function toJpegB64(blob,max=2048){
+  const bmp=await createImageBitmap(blob);const s=Math.min(1,max/Math.max(bmp.width,bmp.height));
+  const c=drawScaled(bmp,0,0,bmp.width,bmp.height,Math.round(bmp.width*s),Math.round(bmp.height*s));
+  return c.toDataURL('image/jpeg',0.92).split(',')[1];
+}
+const GEM_PROMPT=`Eres un mecánico de un taller español. Transcribe con exactitud los datos de las fotos (foto del vehículo y/o documento: permiso de circulación o ficha técnica / tarjeta ITV). No inventes nada: si un dato no se ve o no es legible, deja "".
+Devuelve SOLO un objeto JSON con estas claves (todas texto):
+matricula, marca, modelo, anio, cliente, bastidor, color, tipo, fecha_primera_matriculacion, fecha_matriculacion, fecha_expedicion, lugar_expedicion, validez, homologacion, servicio, cilindrada, potencia, combustible, masa_max_tecnica, masa_max_circulacion, masa_servicio, plazas, plazas_pie, proxima_itv, km_documento, clasificacion, tara, neumaticos, motor_marca, codigo_motor, cilindros, potencia_fiscal, longitud, anchura, altura, fecha_ficha, avisos.
+
+MATRÍCULA (placa del coche): formato actual 4 números + 3 consonantes (ej. 1234BCD) o antiguo provincial (ej. M1234AB). La franja azul de la izquierda con la "E" y las estrellas de la UE NO forma parte de la matrícula: no incluyas esa E. Escríbela en mayúsculas sin espacios ni guiones. Si hay foto del vehículo, la matrícula sale de la placa; indica también el color de la carrocería.
+
+PERMISO DE CIRCULACIÓN (códigos): A matrícula; B fecha de primera matriculación; C.1.1 apellidos; C.1.2 nombre; D.1 marca; D.2 tipo/variante/versión; D.3 denominación comercial (= modelo); D.4 servicio; E número de bastidor (VIN); F.1 masa máx. técnica; F.2 masa máx. en circulación; G masa en servicio; H validez; I fecha de matriculación; I.1 fecha de expedición; I.2 lugar de expedición; K homologación; P.1 cilindrada; P.2 potencia kW; P.3 combustible; S.1 plazas asiento; S.2 plazas de pie. En "Observaciones" suelen venir la próxima ITV y el kilometraje. cliente = nombre y apellidos (C.1.2 + C.1.1).
+
+FICHA TÉCNICA (tarjeta ITV): "Número de identificación" = bastidor (VIN de 17 caracteres, nunca contiene I, O ni Q); "Clasificación" (ej. TURISMO); Marca; Tipo y Variante -> tipo como "Tipo / Variante"; "Denominación comercial" = modelo; Tara (kg) = tara; MTMA/MMA (kg) = masa_max_tecnica; Neumáticos (ej. 195/55 R15 85V); Nº de asientos = plazas; Altura, Anchura, Longitud (mm); Motor: Marca = motor_marca, Tipo = codigo_motor; Nº cilindros/Cilindrada -> cilindros y cilindrada; Potencia fiscal/real (CV fiscales/kW) -> potencia_fiscal y potencia; contraseña de homologación = homologacion; la fecha al pie del documento = fecha_ficha. Combustible: dedúcelo si el tipo de motor lleva (G) gasolina o (D) diésel.
+
+Formato: fechas DD-MM-AAAA; números sin unidades (potencia en kW, cilindrada en cm³, masas en kg); anio = año de la primera matriculación, si no la de matriculación, si no la de la ficha. En "avisos" pon en una frase corta cualquier dato dudoso o ilegible y si la matrícula de la placa no coincide con la del documento.`;
+async function geminiRead(list,onStatus){
+  onStatus('Preparando las fotos para la IA…');
+  const parts=[{text:GEM_PROMPT}];
+  for(const p of list){parts.push({text:p.k==='vehiculo'?'Foto del vehículo:':'Foto del documento (permiso de circulación o ficha técnica):'});parts.push({inline_data:{mime_type:'image/jpeg',data:await toJpegB64(p.blob,p.k==='vehiculo'?1600:2400)}})}
+  const body=JSON.stringify({contents:[{role:'user',parts}],generationConfig:{temperature:0,responseMimeType:'application/json'}});
+  const cached=store.get('tr_gmodel');let models=cached?[cached]:[],listed=false;
+  const more=async()=>{if(listed)return;listed=true;onStatus('Conectando con Gemini…');for(const m of await gemModels())if(!models.includes(m))models.push(m)};
+  if(!models.length)await more();
+  let lastErr=new Error('tu clave no tiene modelos Gemini disponibles');
+  for(let i=0;i<models.length&&i<5;i++){
+    const m=models[i];
+    try{
+      onStatus('Leyendo con IA (Gemini)…');
+      const j=await gemFetch(`/models/${m}:generateContent`,{method:'POST',body});
+      const txt=(j.candidates?.[0]?.content?.parts||[]).filter(x=>!x.thought).map(x=>x.text||'').join('');
+      const mm=txt.match(/\{[\s\S]*\}/);if(!mm)throw new Error(j.candidates?.[0]?.finishReason==='SAFETY'?'la IA rechazó la imagen':'respuesta vacía de la IA');
+      store.set('tr_gmodel',m);
+      return JSON.parse(mm[0]);
+    }catch(e){lastErr=e;if([400,401,403].includes(e.status))throw e;if(i===models.length-1)await more().catch(()=>{})}
+  }
+  store.set('tr_gmodel','');
+  throw lastErr;
+}
+function tidyAI(d){
+  const o={};
+  for(const [k,v] of Object.entries(d||{}))if(v!=null&&String(v).trim()&&!/^(N\/?A|-+|NULL|NO VISIBLE|ILEGIBLE)$/i.test(String(v).trim()))o[k]=String(v).trim();
+  if(o.matricula)o.matricula=cleanPlate(o.matricula);
+  if(o.bastidor)o.bastidor=o.bastidor.toUpperCase().replace(/[\s-]/g,'').replace(/[OQ]/g,'0').replace(/I/g,'1');
+  for(const k of ['fecha_primera_matriculacion','fecha_matriculacion','fecha_expedicion','proxima_itv','validez','fecha_ficha'])if(o[k]&&fixDate(o[k]))o[k]=fixDate(o[k]);
+  for(const k of ['marca','modelo','motor_marca','combustible','clasificacion','lugar_expedicion'])if(o[k])o[k]=o[k].toUpperCase();
+  if(!o.anio){const y=(o.fecha_primera_matriculacion||o.fecha_matriculacion||o.fecha_ficha||'').slice(-4);if(/^\d{4}$/.test(y))o.anio=y}
+  return o;
+}
+
+async function readPhotosLocal(list,onStatus){
+  const out={},avisos=[];let platePhoto='';
+  const ficha=list.find(p=>p.k==='ficha'),veh=list.find(p=>p.k==='vehiculo');
+  if(veh)platePhoto=await readVehiclePlate(veh.blob,onStatus);
+  if(ficha){
+    const d=await readDocument(ficha.blob,onStatus);
+    if(d._score<3)avisos.push('Se ha leído poco del documento; prueba con una foto más cercana, recta y sin reflejos.');
+    delete d._score;delete d._tipo;Object.assign(out,d);
+  }
+  OCR_PROG=null;
+  if(platePhoto&&out.matricula&&platePhoto!==out.matricula)avisos.push(`La placa del coche dice ${platePhoto} y el documento ${out.matricula}; se usa la de la placa.`);
+  if(platePhoto)out.matricula=platePhoto;
+  if(veh&&!platePhoto)avisos.push('No se ha encontrado la placa en la foto del vehículo.');
+  out.avisos=avisos.join(' ');
+  return out;
+}
+
+async function readPhotos(list,onStatus){
+  if(gemKey()){
+    try{const d=tidyAI(await geminiRead(list,onStatus));d._motor='IA (Gemini)';return d}
+    catch(e){
+      const why=e.status===429?'se ha agotado el límite gratuito de Gemini por ahora':e.status===400||e.status===401||e.status===403?'la clave de Gemini no es válida':'no se pudo conectar con Gemini ('+e.message+')';
+      const d=await readPhotosLocal(list,onStatus);d._motor='lector local';d.avisos=[`Se ha usado el lector local porque ${why}.`,d.avisos].filter(Boolean).join(' ');return d;
+    }
+  }
+  const d=await readPhotosLocal(list,onStatus);d._motor='lector local';return d;
+}
+/* ---------- resumen local de visitas anteriores ---------- */
+function summarize(h){
+  const motivos=[...new Set(h.map(v=>v.motivo).filter(Boolean))];
+  const parts=[];
+  parts.push(`${h.length} ${h.length===1?'visita anterior':'visitas anteriores'}`+(motivos.length?`: ${motivos.slice(0,5).map(m=>short(m,40)).join(', ')}${motivos.length>5?'…':''}.`:'.'));
+  const dan=h.filter(v=>v.danado);if(dan.length)parts.push(`Entró con daños ${dan.length===1?'una vez':dan.length+' veces'} (${short(dan[0].danos||'sin descripción',60)}).`);
+  const last=h[0];const lastNote=last.notaSalida||last.observaciones;
+  if(lastNote)parts.push(`Última anotación (${fmtD(last.fechaEntrada)}): ${short(lastNote,140)}`);
+  const kms=h.map(v=>parseInt(String(v.km).replace(/\D/g,''))).filter(n=>n>0);if(kms.length)parts.push(`Últimos km registrados: ${Math.max(...kms).toLocaleString('es-ES')}.`);
+  return parts.join(' ');
+}
+
+/* ---------- navegación ---------- */
+const S={q:'',f:null};
+function nav(v){$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.nav===v));window.scrollTo(0,0)}
+$$('nav button').forEach(b=>b.onclick=()=>({list:viewList,new:()=>viewForm(),settings:viewSettings})[b.dataset.nav]());
+
+/* ---------- lista y búsqueda ---------- */
+function haystack(e){const v=e.vehiculo||{};return [...VKEYS.map(k=>v[k]),e.cliente,e.telefono,e.motivo,e.observaciones,e.danos,e.notaSalida,fmtD(e.fechaEntrada)].join(' ').toLowerCase()+' '+normP(v.matricula).toLowerCase()}
+function viewList(){
+  nav('list');
+  const nIn=ENT.filter(e=>e.estado==='taller').length;
+  if(S.f===null)S.f=nIn?'taller':'todas';
+  $('#app').innerHTML=`<div class="search"><input id="q" type="search" placeholder="Buscar por matrícula, marca, modelo, cliente, motivo…" value="${esc(S.q)}"></div>
+  <div class="chips"><button data-f="taller" class="${S.f==='taller'?'on':''}">En taller · ${nIn}</button><button data-f="todas" class="${S.f==='todas'?'on':''}">Todas · ${ENT.length}</button></div>
+  <div id="cards"></div>`;
+  $('#q').oninput=e=>{S.q=e.target.value;renderCards()};
+  $$('.chips button').forEach(b=>b.onclick=()=>{S.f=b.dataset.f;viewList()});
+  renderCards();
+}
+function renderCards(){
+  const toks=S.q.toLowerCase().split(/\s+/).filter(Boolean);
+  let l=ENT.filter(e=>S.q||S.f==='todas'||e.estado==='taller');
+  if(toks.length)l=l.filter(e=>{const h=haystack(e);return toks.every(t=>h.includes(t)||(normP(t)&&h.includes(normP(t).toLowerCase())))});
+  l.sort((a,b)=>b.fechaEntrada.localeCompare(a.fechaEntrada));
+  const box=$('#cards');
+  if(!l.length){box.innerHTML=`<div class="card empty"><em>${ENT.length?'🔎':'🚗'}</em><p>${ENT.length?'No hay resultados.':'Todavía no hay entradas registradas.'}</p>${ENT.length?'':'<button class="btn pri" id="go">+ Nueva entrada</button>'}</div>`;const g=$('#go');if(g)g.onclick=()=>viewForm();return}
+  const visits=p=>ENT.filter(x=>normP(x.vehiculo?.matricula)===p).length;
+  box.innerHTML=l.map(e=>{const v=e.vehiculo||{};const n=visits(normP(v.matricula));return `<div class="card item" data-id="${e.id}">
+    <div class="thumb" data-ph="${esc(e.fotos?.vehiculo||'')}">🚗</div>
+    <div class="info"><div class="row"><span class="plate"><b>${esc(v.matricula||'—')}</b></span>${e.estado==='taller'?'<span class="tag in">En taller</span>':'<span class="tag out">Entregado</span>'}${e.danado?'<span class="tag red">Dañado</span>':''}${n>1?`<span class="tag" style="background:#eef2ff;color:#4338ca">${n} visitas</span>`:''}</div>
+    <div class="t">${esc([v.marca,v.modelo,v.anio].filter(Boolean).join(' ')||'Sin marca/modelo')}</div>
+    <div class="muted small">${fmt(e.fechaEntrada)}${e.cliente?' · '+esc(e.cliente):''}${e.motivo?' · '+esc(short(e.motivo,50)):''}</div></div></div>`}).join('');
+  $$('.item',box).forEach(c=>c.onclick=()=>viewDetail(c.dataset.id));
+  $$('[data-ph]',box).forEach(async t=>{const u=await photoURL(t.dataset.ph);if(u){const i=document.createElement('img');i.className='thumb';i.src=u;t.replaceWith(i)}});
+}
+
+/* ---------- historial de un vehículo ---------- */
+function historyFor(plate,exclude){const p=normP(plate);if(p.length<4)return[];return ENT.filter(x=>x.id!==exclude&&normP(x.vehiculo?.matricula)===p).sort((a,b)=>b.fechaEntrada.localeCompare(a.fechaEntrada))}
+function renderHistory(el,plate,exclude,opts={}){
+  const h=historyFor(plate,exclude);
+  if(!h.length){el.innerHTML='';return h}
+  const first=h[h.length-1],last=h[0];
+  el.innerHTML=`<section class="card hist"><h3>⚠️ ${opts.title||'Este vehículo ya ha estado en el taller'} ${h.length} ${h.length===1?'vez':'veces'}</h3>
+   <div class="small muted">Primera visita: <b>${fmtD(first.fechaEntrada)}</b> · Última: <b>${fmtD(last.fechaEntrada)}</b>${last.cliente?` · Cliente: <b>${esc(last.cliente)}</b>`:''}</div>
+   <div class="sum"><b>Resumen:</b> ${esc(summarize(h))}</div>
+   ${opts.fill?'<button class="btn sm noprint" id="fillLast">Rellenar con los datos de la última visita</button>':''}
+   <ul class="visits">${h.map(v=>`<li><div class="vd">${fmt(v.fechaEntrada)}${v.fechaSalida?' → '+fmtD(v.fechaSalida):' · <span style="color:var(--ac)">en taller</span>'}</div>
+     <div><b>${esc(v.motivo||'Sin motivo anotado')}</b>${v.km?` · ${esc(v.km)} km`:''} ${v.danado?'<span class="tag red">Dañado</span>':''}</div>
+     ${v.observaciones?`<div class="muted small">${esc(short(v.observaciones,160))}</div>`:''}
+     ${opts.links?`<button class="link noprint" data-open="${v.id}">Ver entrada →</button>`:''}</li>`).join('')}</ul></section>`;
+  $$('[data-open]',el).forEach(b=>b.onclick=()=>viewDetail(b.dataset.open));
+  return h;
+}
+
+/* ---------- formulario de entrada ---------- */
+function viewForm(existing){
+  nav(existing?'':'new');
+  const e=existing?structuredClone(existing):{id:uid(),fechaEntrada:new Date().toISOString(),estado:'taller',vehiculo:{},fotos:{},danado:false};
+  const v=e.vehiculo;const files={};const dirty=new Set();let readSeq=0;
+  const fld=(k,l,val,a='')=>`<label class="f"><span>${l}</span><input data-v="${k}" value="${esc(val)}" ${a}></label>`;
+  $('#app').innerHTML=`<h2>${existing?'Editar entrada':'Nueva entrada'}</h2>
+  <section class="card"><h3><span class="step">1</span>Fotos</h3>
+   <div class="photos">
+    <label class="ph" data-k="vehiculo"><input type="file" accept="image/*" hidden><div><em>📷</em>Foto del vehículo</div></label>
+    <label class="ph" data-k="ficha"><input type="file" accept="image/*" hidden><div><em>📄</em>Ficha técnica / permiso</div></label>
+   </div>
+   <div id="ai" class="ai">${gemKey()?'Al añadir las fotos, la IA (Gemini) leerá la matrícula y los datos del documento.':'Al añadir las fotos se leerán la matrícula y los datos automáticamente con el lector local. Para una lectura mucho mejor, activa la IA gratuita de Gemini en ⚙︎ Ajustes.'}</div>
+  </section>
+  <div id="hist"></div>
+  <section class="card"><h3><span class="step">2</span>Vehículo</h3>
+   <div class="grid">
+    ${fld('matricula','Matrícula',v.matricula,'class="plate-in" autocapitalize="characters" placeholder="1234ABC"')}
+    ${PRIMARY.map(([k,l])=>fld(k,l,v[k])).join('')}
+    <label class="f"><span>Cliente</span><input data-e="cliente" value="${esc(e.cliente)}"></label>
+    <label class="f"><span>Teléfono</span><input data-e="telefono" type="tel" value="${esc(e.telefono)}"></label>
+   </div>
+   <details ${FICHA.some(([k])=>v[k])?'open':''}><summary>Datos de la ficha técnica</summary><div class="grid">${FICHA.map(([k,l])=>fld(k,l,v[k])).join('')}</div></details>
+  </section>
+  <section class="card"><h3><span class="step">3</span>Entrada al taller</h3>
+   <div class="grid">
+    <label class="f"><span>Fecha y hora de entrada</span><input data-e="fechaEntrada" type="datetime-local" value="${toLocalInput(e.fechaEntrada)}"></label>
+    <label class="f"><span>Kilómetros actuales</span><input data-e="km" inputmode="numeric" value="${esc(e.km)}"></label>
+   </div>
+   <label class="f" style="display:block;margin-top:12px"><span>Motivo de la entrada</span><input data-e="motivo" placeholder="Cambio de aceite, revisión, ruido en frenos…" value="${esc(e.motivo)}"></label>
+   <div style="margin-top:14px"><div class="f"><span>¿El vehículo entra dañado?</span></div>
+    <div class="toggle"><button type="button" class="no">No</button><button type="button" class="si">Sí, tiene daños</button></div></div>
+   <label class="f" id="danosBox" style="display:block;margin-top:12px"><span>Descripción de los daños</span><textarea data-e="danos" rows="2" placeholder="Rayón puerta trasera izquierda, golpe en paragolpes…">${esc(e.danos)}</textarea></label>
+   <label class="f" style="display:block;margin-top:12px"><span>Observaciones</span><textarea data-e="observaciones" rows="5" placeholder="Lo que veas durante la revisión, avisos al cliente, piezas a pedir…">${esc(e.observaciones)}</textarea></label>
+  </section>
+  <div class="actions"><button class="btn" id="cancel">Cancelar</button><button class="btn pri" id="save">Guardar entrada</button></div>`;
+
+  // fotos
+  $$('.ph').forEach(async box=>{
+    const k=box.dataset.k,inp=$('input',box);
+    const show=src=>{let i=$('img',box);if(!i){i=document.createElement('img');box.appendChild(i);box.insertAdjacentHTML('beforeend','<span class="chg">Cambiar</span>')}i.src=src};
+    if(e.fotos[k]){const u=await photoURL(e.fotos[k]);if(u)show(u)}
+    inp.onchange=()=>{const f=inp.files[0];if(!f)return;files[k]=f;show(URL.createObjectURL(f));autoRead()};
+  });
+  async function autoRead(){
+    const ai=$('#ai'),seq=++readSeq;ai.className='ai';ai.innerHTML='<span class="spin"></span>Preparando el lector…';
+    const status=m=>{if(seq===readSeq)ai.innerHTML='<span class="spin"></span>'+esc(m)};
+    try{
+      const list=[];for(const k of ['vehiculo','ficha']){if(files[k])list.push({k,blob:files[k]});else if(e.fotos[k]){const f=await DB.get('fotos',e.fotos[k]);if(f)list.push({k,blob:f.blob})}}
+      const d=await readPhotos(list,status);if(seq!==readSeq)return;
+      let n=0;
+      for(const k of VKEYS){const val=String(d[k]??'').trim();const inp=$(`[data-v="${k}"]`);if(val&&inp&&!dirty.has(k)){inp.value=k==='matricula'?normP(val):val;n++}}
+      const c=String(d.cliente??'').trim();const ci=$('[data-e="cliente"]');if(c&&!dirty.has('cliente')){ci.value=c;n++}
+      if(FICHA.some(([k])=>d[k]))$('details').open=true;
+      ai.className=n?'ai ok':'ai err';ai.innerHTML=`${n?'✓ '+n+' datos leídos con '+esc(d._motor||'')+'. Revísalos antes de guardar.':'No se han podido leer datos. Rellénalos a mano o prueba con otra foto.'}${d.avisos?`<div style="color:#9a3412;margin-top:4px">⚠️ ${esc(d.avisos)}</div>`:''}`;
+      checkHist();
+    }catch(err){if(seq!==readSeq)return;ai.className='ai err';ai.textContent='No se pudieron leer los datos: '+err.message}
+  }
+  // marcar campos editados a mano
+  $$('[data-v],[data-e]').forEach(i=>i.addEventListener('input',()=>dirty.add(i.dataset.v||i.dataset.e)));
+  // historial al escribir la matrícula
+  let ht;const checkHist=()=>{const pi=$('[data-v="matricula"]');if(!pi)return;const h=renderHistory($('#hist'),pi.value,e.id,{fill:!existing});const b=$('#fillLast');
+    if(b)b.onclick=()=>{const last=h[0];for(const k of VKEYS){const i=$(`[data-v="${k}"]`);if(i&&!i.value&&last.vehiculo?.[k])i.value=last.vehiculo[k]}
+      for(const k of ['cliente','telefono']){const i=$(`[data-e="${k}"]`);if(!i.value&&last[k])i.value=last[k]}toast('Datos copiados de la última visita')}};
+  $('[data-v="matricula"]').addEventListener('input',()=>{clearTimeout(ht);ht=setTimeout(checkHist,350)});
+  if(v.matricula)checkHist();
+  // dañado
+  const setD=val=>{e.danado=val;$('.toggle .no').classList.toggle('on',!val);$('.toggle .si').classList.toggle('on',val);$('#danosBox').style.display=val?'block':'none'};
+  $('.toggle .no').onclick=()=>setD(false);$('.toggle .si').onclick=()=>setD(true);setD(!!e.danado);
+  $('#cancel').onclick=()=>existing?viewDetail(existing.id):viewList();
+  $('#save').onclick=async()=>{clearTimeout(ht);
+    for(const k of VKEYS){const i=$(`[data-v="${k}"]`);v[k]=i.value.trim()}
+    v.matricula=normP(v.matricula);
+    if(!v.matricula){toast('Falta la matrícula');$('[data-v="matricula"]').focus();return}
+    for(const k of ['cliente','telefono','km','motivo','danos','observaciones'])e[k]=$(`[data-e="${k}"]`).value.trim();
+    e.fechaEntrada=fromLocalInput($('[data-e="fechaEntrada"]').value);
+    if(!e.danado)e.danos='';
+    const btn=$('#save');btn.disabled=true;btn.textContent='Guardando…';
+    try{
+      for(const k in files){const id=e.fotos[k]||uid();await DB.put('fotos',{id,blob:files[k]});delete urlCache[id];e.fotos[k]=id}
+      e.actualizado=new Date().toISOString();await DB.put('entradas',e);
+      const i=ENT.findIndex(x=>x.id===e.id);if(i>=0)ENT[i]=e;else ENT.push(e);
+      toast('Entrada guardada');viewDetail(e.id);
+    }catch(err){btn.disabled=false;btn.textContent='Guardar entrada';toast('No se pudo guardar: '+err.message)}
+  };
+}
+
+/* ---------- detalle ---------- */
+async function viewDetail(id){
+  nav('');
+  const e=ENT.find(x=>x.id===id);if(!e){viewList();return}
+  const v=e.vehiculo||{};
+  const ficha=FICHA.filter(([k])=>v[k]).map(([k,l])=>`<div><dt>${l}</dt><dd>${esc(v[k])}</dd></div>`).join('');
+  $('#app').innerHTML=`<div class="head"><span class="plate big"><b>${esc(v.matricula)}</b></span><div><h2>${esc([v.marca,v.modelo].filter(Boolean).join(' ')||'Vehículo')}</h2><div class="muted">${esc(v.anio||'')}${v.combustible?' · '+esc(v.combustible):''}</div></div>
+   <div style="margin-left:auto;display:flex;gap:6px">${e.estado==='taller'?'<span class="tag in">En taller</span>':'<span class="tag out">Entregado</span>'}${e.danado?'<span class="tag red">Dañado</span>':''}</div></div>
+  <div class="actions noprint" style="justify-content:flex-start;margin-bottom:14px">
+   ${e.estado==='taller'?'<button class="btn pri" id="out">Registrar salida</button>':'<button class="btn" id="reopen">Volver a abrir</button>'}
+   <button class="btn" id="edit">Editar</button><button class="btn" id="print">Imprimir</button><button class="btn danger" id="del">Eliminar</button></div>
+  <div id="outBox"></div>
+  <section class="card"><h3>Entrada</h3><dl class="dl">
+   <div><dt>Entrada</dt><dd>${fmt(e.fechaEntrada)}</dd></div><div><dt>Salida</dt><dd>${fmt(e.fechaSalida)}</dd></div>
+   <div><dt>Kilómetros</dt><dd>${esc(e.km||'—')}</dd></div><div><dt>Cliente</dt><dd>${esc(e.cliente||'—')}</dd></div>
+   <div><dt>Teléfono</dt><dd>${e.telefono?`<a href="tel:${esc(e.telefono)}">${esc(e.telefono)}</a>`:'—'}</dd></div><div><dt>Motivo</dt><dd>${esc(e.motivo||'—')}</dd></div></dl>
+   ${e.danado?`<div class="ai err" style="margin-top:12px"><b>Daños:</b> ${esc(e.danos||'Sin descripción')}</div>`:'<div class="ai ok" style="margin-top:12px">Sin daños al entrar</div>'}
+   <h3 style="margin-top:16px">Observaciones</h3><div class="note">${esc(e.observaciones||'—')}</div>
+   ${e.notaSalida?`<h3 style="margin-top:16px">Nota de salida</h3><div class="note">${esc(e.notaSalida)}</div>`:''}</section>
+  <section class="card" id="galBox" hidden><h3>Fotos</h3><div class="gal" id="gal"></div></section>
+  ${ficha?`<section class="card"><h3>Datos de la ficha técnica</h3><dl class="dl">${ficha}</dl></section>`:''}
+  <div id="hist"></div>`;
+  // fotos
+  const gal=$('#gal');for(const [k,l] of [['vehiculo','Vehículo'],['ficha','Ficha técnica / permiso']]){const u=await photoURL(e.fotos?.[k]);if(u){$('#galBox').hidden=false;gal.insertAdjacentHTML('beforeend',`<figure><img src="${u}"><figcaption>${l}</figcaption></figure>`)}}
+  $$('img',gal).forEach(i=>i.onclick=()=>lightbox(i.src));
+  renderHistory($('#hist'),v.matricula,e.id,{title:'Otras visitas de este vehículo:',links:true});
+  $('#edit').onclick=()=>viewForm(e);
+  $('#print').onclick=()=>window.print();
+  $('#del').onclick=async()=>{if(!confirm('¿Eliminar esta entrada y sus fotos?'))return;for(const k in (e.fotos||{}))await DB.del('fotos',e.fotos[k]);await DB.del('entradas',e.id);ENT=ENT.filter(x=>x.id!==e.id);toast('Entrada eliminada');viewList()};
+  const save=async()=>{e.actualizado=new Date().toISOString();await DB.put('entradas',e);viewDetail(e.id)};
+  if($('#reopen'))$('#reopen').onclick=async()=>{e.estado='taller';e.fechaSalida=null;await save();toast('Entrada abierta de nuevo')};
+  if($('#out'))$('#out').onclick=()=>{
+    $('#outBox').innerHTML=`<section class="card" style="border-color:var(--ac)"><h3>Registrar salida</h3><div class="grid">
+     <label class="f"><span>Fecha y hora de salida</span><input id="fs" type="datetime-local" value="${toLocalInput()}"></label></div>
+     <label class="f" style="display:block;margin-top:12px"><span>Nota de salida (trabajo hecho, avisos al cliente…)</span><textarea id="ns" rows="3"></textarea></label>
+     <div class="actions"><button class="btn" id="oc">Cancelar</button><button class="btn pri" id="ok">Confirmar salida</button></div></section>`;
+    $('#ns').focus();$('#oc').onclick=()=>$('#outBox').innerHTML='';
+    $('#ok').onclick=async()=>{e.estado='entregado';e.fechaSalida=fromLocalInput($('#fs').value);e.notaSalida=$('#ns').value.trim();await save();toast('Salida registrada')};
+  };
+}
+
+/* ---------- ajustes y copias ---------- */
+function viewSettings(){
+  nav('settings');
+  $('#app').innerHTML=`<h2>Ajustes</h2>
+  <section class="card"><h3>Lectura con IA gratuita (Gemini)</h3>
+   <p class="small" style="margin-top:0">Lee la matrícula, el permiso de circulación y la ficha técnica mucho mejor que el lector local (bastidor, neumáticos, motor…). Es gratis con tu cuenta de Google:</p>
+   <ol class="small" style="margin:0 0 12px;padding-left:20px;line-height:1.7"><li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> con tu cuenta de Google.</li><li>Pulsa <b>Crear clave de API</b> (Create API key) y cópiala.</li><li>Pégala aquí y pulsa <b>Guardar y probar</b>.</li></ol>
+   <label class="f"><span>Clave de Gemini</span><input id="gk" type="password" value="${esc(gemKey())}" placeholder="AIza…" autocomplete="off"></label>
+   <div class="actions" style="justify-content:flex-start"><button class="btn pri" id="gsave">Guardar y probar</button><button class="btn" id="gdel">Quitar clave</button></div>
+   <div id="gst" class="ai" style="display:${gemKey()?'block':'none'}">${gemKey()?'Clave guardada'+(store.get('tr_gmodel')?' · modelo '+esc(store.get('tr_gmodel')):''):''}</div>
+   <p class="muted small" style="margin:12px 0 0">Las fotos se envían a Google para leerlas. Según sus condiciones, para usuarios en España (EEE) aplica sus reglas de datos del plan de pago también al uso gratuito, pero recuerda que el permiso lleva el nombre del cliente. La clave es para tu uso: no compartas esta página con la clave puesta. Se guarda solo en este navegador. Si no hay internet, se agota el límite gratuito o quitas la clave, se usa el lector local.</p></section>
+  <section class="card"><h3>Lector local (sin internet)</h3>
+   <p class="muted small" style="margin:0">Tesseract (open source) dentro del navegador. Se usa si no hay clave de Gemini o si falla. La primera vez necesita internet para descargarse.</p></section>
+  <section class="card"><h3>Copia de seguridad</h3>
+   <p class="muted small" style="margin-top:0">Los datos y las fotos se guardan en este navegador. Descarga copias a menudo y guárdalas en tus discos.</p>
+   <p><b>${ENT.length}</b> entradas registradas.</p>
+   <div class="actions" style="justify-content:flex-start"><button class="btn pri" id="exp">Descargar copia</button><label class="btn">Restaurar copia<input id="imp" type="file" accept=".json" hidden></label></div>
+   <div id="bk" class="muted small" style="margin-top:8px"></div></section>`;
+  $('#gsave').onclick=async()=>{
+    const k=$('#gk').value.trim(),st=$('#gst');st.style.display='block';
+    if(!k){st.className='ai err';st.textContent='Pega primero la clave.';return}
+    store.set('tr_gkey',k);store.set('tr_gmodel','');st.className='ai';st.innerHTML='<span class="spin"></span>Comprobando la clave…';
+    try{const m=await gemModels();if(!m.length)throw new Error('la clave no tiene modelos disponibles');store.set('tr_gmodel',m[0]);st.className='ai ok';st.textContent='✓ Clave correcta. Se usará el modelo '+m[0]+'.'}
+    catch(e){st.className='ai err';st.textContent='No funciona: '+e.message}
+  };
+  $('#gdel').onclick=()=>{store.set('tr_gkey','');store.set('tr_gmodel','');$('#gk').value='';const st=$('#gst');st.style.display='block';st.className='ai';st.textContent='Clave quitada. Se usará el lector local.'};
+  $('#exp').onclick=async()=>{
+    $('#bk').innerHTML='<span class="spin"></span>Preparando copia…';
+    const fotos=await DB.all('fotos');const out=[];
+    for(const f of fotos)out.push({id:f.id,data:await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(f.blob)})});
+    const blob=new Blob([JSON.stringify({version:1,fecha:new Date().toISOString(),entradas:ENT,fotos:out})],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`registro-taller-${new Date().toISOString().slice(0,10)}.json`;a.click();
+    $('#bk').textContent='Copia descargada ('+(blob.size/1048576).toFixed(1)+' MB).';
+  };
+  $('#imp').onchange=async ev=>{
+    const f=ev.target.files[0];if(!f)return;
+    try{$('#bk').innerHTML='<span class="spin"></span>Restaurando…';const d=JSON.parse(await f.text());
+      for(const p of d.fotos||[]){const b=await (await fetch(p.data)).blob();await DB.put('fotos',{id:p.id,blob:b});delete urlCache[p.id]}
+      for(const e of d.entradas||[])await DB.put('entradas',e);
+      ENT=await DB.all('entradas');toast('Copia restaurada');viewSettings();
+    }catch(err){$('#bk').textContent='No se pudo restaurar: '+err.message}
+  };
+}
+
+/* ---------- inicio ---------- */
+(async()=>{
+  try{await DB.open();ENT=await DB.all('entradas');if(navigator.storage?.persist)navigator.storage.persist();viewList()}
+  catch(err){$('#app').innerHTML=`<div class="card empty"><em>⚠️</em><p>Este navegador no permite guardar datos: ${esc(err.message)}</p></div>`}
+})();
+</script>
+</body>
+</html>
