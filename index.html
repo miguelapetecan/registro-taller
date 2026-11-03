@@ -40,6 +40,18 @@ summary{cursor:pointer;font-weight:600;color:var(--ac);margin-bottom:10px}
 .ph:hover{border-color:var(--ac);color:var(--ac)}
 .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .ph em{font-size:30px;display:block;font-style:normal}
+.xgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.xi{position:relative}.xi img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;display:block;background:#e5e7eb;cursor:zoom-in}
+.xi input{margin-top:4px;padding:6px 8px;font-size:13px}
+.rm{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(220,38,38,.92);color:#fff;font-size:14px;cursor:pointer;z-index:3;line-height:1}
+.dmg{border:1px solid #fecaca;border-radius:12px;padding:10px;margin-bottom:10px;display:grid;grid-template-columns:120px 1fr;gap:10px;background:#fffafa}
+.dmg .dph{aspect-ratio:4/3;border:2px dashed #d1d5db;border-radius:10px;display:grid;place-items:center;cursor:pointer;position:relative;overflow:hidden;font-size:12px;color:var(--mu);text-align:center;background:#fff;padding:4px}
+.dmg .dph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.dmg .dn{font-weight:600;font-size:13px;color:var(--red);display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.dmg textarea{min-height:64px}
+.dview{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bd)}
+.dview:last-child{border-bottom:0}.dview img{width:120px;aspect-ratio:4/3;object-fit:cover;border-radius:8px;cursor:zoom-in;flex:none}
+@media(max-width:560px){.dmg{grid-template-columns:96px 1fr}.dview img{width:96px}}
 .ph .del{position:absolute;bottom:8px;left:8px;background:rgba(220,38,38,.92);color:#fff;font:600 12px/1 system-ui,sans-serif;padding:6px 11px;border-radius:99px;z-index:3;border:0;cursor:pointer}
 .ph .chg{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.65);color:#fff;font-size:12px;padding:3px 9px;border-radius:99px;z-index:2}
 .ai{margin-top:12px;padding:10px 12px;border-radius:10px;background:#f9fafb;font-size:14px}
@@ -662,7 +674,7 @@ function nav(v){$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.na
 $$('nav button').forEach(b=>b.onclick=()=>({list:viewList,new:()=>viewForm(),settings:viewSettings})[b.dataset.nav]());
 
 /* ---------- lista y búsqueda ---------- */
-function haystack(e){const v=e.vehiculo||{};return [...VKEYS.map(k=>v[k]),e.cliente,e.telefono,e.motivo,e.observaciones,e.danos,e.notaSalida,fmtD(e.fechaEntrada)].join(' ').toLowerCase()+' '+normP(v.matricula).toLowerCase()}
+function haystack(e){const v=e.vehiculo||{};return [...VKEYS.map(k=>v[k]),e.cliente,e.telefono,e.motivo,e.observaciones,e.danos,(e.extras||[]).map(x=>x.desc).join(' '),e.notaSalida,fmtD(e.fechaEntrada)].join(' ').toLowerCase()+' '+normP(v.matricula).toLowerCase()}
 function viewList(){
   nav('list');
   const nIn=ENT.filter(e=>e.estado==='taller').length;
@@ -713,7 +725,11 @@ function renderHistory(el,plate,exclude,opts={}){
 function viewForm(existing){
   nav(existing?'':'new');
   const e=existing?structuredClone(existing):{id:uid(),fechaEntrada:new Date().toISOString(),estado:'taller',vehiculo:{},fotos:{},danado:false};
-  const v=e.vehiculo;const files={},removed=new Set();const dirty=new Set();let readSeq=0;
+  const v=e.vehiculo;const files={},removed=new Set();
+  const extras=(e.extras||[]).map(x=>({id:x.id,desc:x.desc||''}));
+  const dlist=(e.danosList||(e.danos?[{texto:e.danos}]:[])).map(x=>({texto:x.texto||'',foto:x.foto||null}));
+  const dropIds=new Set();
+  const srcOf=async x=>x.file?(x.url=x.url||URL.createObjectURL(x.file)):await photoURL(x.id||x.foto);const dirty=new Set();let readSeq=0;
   const fld=(k,l,val,a='')=>`<label class="f"><span>${l}</span><input data-v="${k}" value="${esc(val)}" ${a}></label>`;
   $('#app').innerHTML=`<h2>${existing?'Editar entrada':'Nueva entrada'}</h2>
   <section class="card"><h3><span class="step">1</span>Fotos</h3>
@@ -741,11 +757,43 @@ function viewForm(existing){
    <label class="f" style="display:block;margin-top:12px"><span>Motivo de la entrada</span><input data-e="motivo" placeholder="Cambio de aceite, revisión, ruido en frenos…" value="${esc(e.motivo)}"></label>
    <div style="margin-top:14px"><div class="f"><span>¿El vehículo entra dañado?</span></div>
     <div class="toggle"><button type="button" class="no">No</button><button type="button" class="si">Sí, tiene daños</button></div></div>
-   <label class="f" id="danosBox" style="display:block;margin-top:12px"><span>Descripción de los daños</span><textarea data-e="danos" rows="2" placeholder="Rayón puerta trasera izquierda, golpe en paragolpes…">${esc(e.danos)}</textarea></label>
+   <div id="danosBox" style="margin-top:12px"><div class="f"><span>Daños del vehículo</span></div><div id="dlist"></div><button type="button" class="btn sm" id="addD">+ Añadir daño</button></div>
    <label class="f" style="display:block;margin-top:12px"><span>Observaciones</span><textarea data-e="observaciones" rows="5" placeholder="Lo que veas durante la revisión, avisos al cliente, piezas a pedir…">${esc(e.observaciones)}</textarea></label>
+   <div style="margin-top:14px"><div class="f"><span>Más fotos del vehículo</span></div><div class="xgrid" id="xlist"></div>
+    <label class="btn sm" style="display:inline-block;margin-top:8px">📷 Añadir fotos<input type="file" accept="image/*" multiple hidden id="xin"></label></div>
   </section>
   <div class="actions"><button class="btn" id="cancel">Cancelar</button><button class="btn pri" id="save">Guardar entrada</button></div>`;
 
+  // más fotos del vehículo
+  async function renderExtras(){
+    const box=$('#xlist');if(!box)return;
+    box.innerHTML=extras.map((x,i)=>`<div class="xi"><img data-i="${i}" alt=""><button type="button" class="rm" data-rm="${i}" title="Borrar foto">✕</button><input data-desc="${i}" placeholder="Descripción (opcional)" value="${esc(x.desc)}"></div>`).join('')||'<div class="muted small">Sin fotos adicionales.</div>';
+    for(const im of $$('img',box)){const x=extras[+im.dataset.i];const u=await srcOf(x);if(u)im.src=u;im.onclick=()=>lightbox(im.src)}
+    $$('[data-rm]',box).forEach(b=>b.onclick=()=>{const x=extras[+b.dataset.rm];if(x.id)dropIds.add(x.id);extras.splice(+b.dataset.rm,1);renderExtras()});
+    $$('[data-desc]',box).forEach(inp=>inp.oninput=()=>{extras[+inp.dataset.desc].desc=inp.value});
+  }
+  $('#xin').onchange=ev=>{for(const f of ev.target.files)extras.push({file:f,desc:''});ev.target.value='';renderExtras()};
+  renderExtras();
+  // daños, cada uno con su foto opcional
+  async function renderDanos(focusLast){
+    const box=$('#dlist');
+    box.innerHTML=dlist.map((d,i)=>`<div class="dmg">
+      <label class="dph" data-i="${i}"><input type="file" accept="image/*" hidden><span>📷<br>Añadir foto<br>(opcional)</span></label>
+      <div><div class="dn">Daño ${i+1}<button type="button" class="btn sm danger" data-deld="${i}">Eliminar daño</button></div>
+      <textarea data-dt="${i}" placeholder="Ej.: rayón en la puerta trasera izquierda, golpe en el paragolpes…">${esc(d.texto)}</textarea>
+      ${d.file||d.foto?`<button type="button" class="btn sm" data-nof="${i}" style="margin-top:6px">Quitar foto</button>`:''}</div></div>`).join('')||'<div class="muted small" style="margin-bottom:8px">Sin daños añadidos.</div>';
+    for(const lab of $$('.dph',box)){
+      const i=+lab.dataset.i,d=dlist[i];
+      if(d.file||d.foto){const u=await srcOf(d);if(u){lab.insertAdjacentHTML('beforeend',`<img src="${u}" alt="">`)}}
+      $('input',lab).onchange=ev=>{const f=ev.target.files[0];if(!f)return;if(d.foto){dropIds.add(d.foto);d.foto=null}d.file=f;d.url=null;renderDanos()};
+    }
+    $$('[data-dt]',box).forEach(ta=>ta.oninput=()=>{dlist[+ta.dataset.dt].texto=ta.value});
+    $$('[data-deld]',box).forEach(b=>b.onclick=()=>{const d=dlist[+b.dataset.deld];if(d.foto)dropIds.add(d.foto);dlist.splice(+b.dataset.deld,1);renderDanos()});
+    $$('[data-nof]',box).forEach(b=>b.onclick=()=>{const d=dlist[+b.dataset.nof];if(d.foto)dropIds.add(d.foto);d.foto=null;d.file=null;d.url=null;renderDanos()});
+    if(focusLast){const all=$$('[data-dt]',box);if(all.length)all[all.length-1].focus()}
+  }
+  $('#addD').onclick=()=>{dlist.push({texto:'',foto:null});renderDanos(true)};
+  renderDanos();
   // fotos
   $$('.ph').forEach(async box=>{
     const k=box.dataset.k,inp=$('input',box);
@@ -779,20 +827,27 @@ function viewForm(existing){
   $('[data-v="matricula"]').addEventListener('input',()=>{clearTimeout(ht);ht=setTimeout(checkHist,350)});
   if(v.matricula)checkHist();
   // dañado
-  const setD=val=>{e.danado=val;$('.toggle .no').classList.toggle('on',!val);$('.toggle .si').classList.toggle('on',val);$('#danosBox').style.display=val?'block':'none'};
+  const setD=val=>{e.danado=val;$('.toggle .no').classList.toggle('on',!val);$('.toggle .si').classList.toggle('on',val);$('#danosBox').style.display=val?'block':'none';if(val&&!dlist.length){dlist.push({texto:'',foto:null});renderDanos(true)}};
   $('.toggle .no').onclick=()=>setD(false);$('.toggle .si').onclick=()=>setD(true);setD(!!e.danado);
   $('#cancel').onclick=()=>existing?viewDetail(existing.id):viewList();
   $('#save').onclick=async()=>{clearTimeout(ht);
     for(const k of VKEYS){const i=$(`[data-v="${k}"]`);v[k]=i.value.trim()}
     v.matricula=normP(v.matricula);
     if(!v.matricula){toast('Falta la matrícula');$('[data-v="matricula"]').focus();return}
-    for(const k of ['cliente','telefono','km','motivo','danos','observaciones'])e[k]=$(`[data-e="${k}"]`).value.trim();
+    for(const k of ['cliente','telefono','km','motivo','observaciones'])e[k]=$(`[data-e="${k}"]`).value.trim();
     e.fechaEntrada=fromLocalInput($('[data-e="fechaEntrada"]').value);
-    if(!e.danado)e.danos='';
     const btn=$('#save');btn.disabled=true;btn.textContent='Guardando…';
     try{
       for(const k of removed){if(files[k])continue;await DB.del('fotos',e.fotos[k]);delete urlCache[e.fotos[k]];delete e.fotos[k]}
       for(const k in files){const id=e.fotos[k]||uid();await DB.put('fotos',{id,blob:files[k]});delete urlCache[id];e.fotos[k]=id}
+      for(const x of extras)if(x.file){x.id=uid();await DB.put('fotos',{id:x.id,blob:x.file});x.file=null}
+      e.extras=extras.map(x=>({id:x.id,desc:x.desc.trim()}));
+      if(!e.danado){for(const d of dlist)if(d.foto)dropIds.add(d.foto);dlist.length=0}
+      const dl=dlist.filter(d=>d.texto.trim()||d.file||d.foto);
+      for(const d of dl)if(d.file){d.foto=uid();await DB.put('fotos',{id:d.foto,blob:d.file});d.file=null}
+      e.danosList=dl.map(d=>({texto:d.texto.trim(),foto:d.foto||null}));
+      e.danos=e.danosList.map(d=>d.texto).filter(Boolean).join(' · ');
+      for(const id of dropIds){await DB.del('fotos',id);delete urlCache[id]}
       e.actualizado=new Date().toISOString();await DB.put('entradas',e);
       const i=ENT.findIndex(x=>x.id===e.id);if(i>=0)ENT[i]=e;else ENT.push(e);
       toast('Entrada guardada');viewDetail(e.id);
@@ -805,6 +860,7 @@ async function viewDetail(id){
   nav('');
   const e=ENT.find(x=>x.id===id);if(!e){viewList();return}
   const v=e.vehiculo||{};
+  const dmgs=e.danosList||(e.danos?[{texto:e.danos}]:[]);
   const ficha=FICHA.filter(([k])=>v[k]).map(([k,l])=>`<div><dt>${l}</dt><dd>${esc(v[k])}</dd></div>`).join('');
   $('#app').innerHTML=`<div class="head"><span class="plate big"><b>${esc(v.matricula)}</b></span><div><h2>${esc([v.marca,v.modelo].filter(Boolean).join(' ')||'Vehículo')}</h2><div class="muted">${esc(v.anio||'')}${v.combustible?' · '+esc(v.combustible):''}</div></div>
    <div style="margin-left:auto;display:flex;gap:6px">${e.estado==='taller'?'<span class="tag in">En taller</span>':'<span class="tag out">Entregado</span>'}${e.danado?'<span class="tag red">Dañado</span>':''}</div></div>
@@ -816,7 +872,7 @@ async function viewDetail(id){
    <div><dt>Entrada</dt><dd>${fmt(e.fechaEntrada)}</dd></div><div><dt>Salida</dt><dd>${fmt(e.fechaSalida)}</dd></div>
    <div><dt>Kilómetros</dt><dd>${esc(e.km||'—')}</dd></div><div><dt>Cliente</dt><dd>${esc(e.cliente||'—')}</dd></div>
    <div><dt>Teléfono</dt><dd>${e.telefono?`<a href="tel:${esc(e.telefono)}">${esc(e.telefono)}</a>`:'—'}</dd></div><div><dt>Motivo</dt><dd>${esc(e.motivo||'—')}</dd></div></dl>
-   ${e.danado?`<div class="ai err" style="margin-top:12px"><b>Daños:</b> ${esc(e.danos||'Sin descripción')}</div>`:'<div class="ai ok" style="margin-top:12px">Sin daños al entrar</div>'}
+   ${e.danado?`<div class="ai err" style="margin-top:12px"><b>Entra con daños${dmgs.length?' ('+dmgs.length+')':''}</b></div><div id="dview">${dmgs.map((d,i)=>`<div class="dview">${d.foto?`<img data-ph="${esc(d.foto)}" alt="">`:''}<div><b>Daño ${i+1}</b><div class="note">${esc(d.texto||'Sin descripción')}</div></div></div>`).join('')}</div>`:'<div class="ai ok" style="margin-top:12px">Sin daños al entrar</div>'}
    <h3 style="margin-top:16px">Observaciones</h3><div class="note">${esc(e.observaciones||'—')}</div>
    ${e.notaSalida?`<h3 style="margin-top:16px">Nota de salida</h3><div class="note">${esc(e.notaSalida)}</div>`:''}</section>
   <section class="card" id="galBox" hidden><h3>Fotos</h3><div class="gal" id="gal"></div></section>
@@ -824,11 +880,13 @@ async function viewDetail(id){
   <div id="hist"></div>`;
   // fotos
   const gal=$('#gal');for(const [k,l] of [['vehiculo','Vehículo'],['ficha','Ficha técnica / permiso']]){const u=await photoURL(e.fotos?.[k]);if(u){$('#galBox').hidden=false;gal.insertAdjacentHTML('beforeend',`<figure><img src="${u}"><figcaption>${l}</figcaption></figure>`)}}
+  for(const x of e.extras||[]){const u=await photoURL(x.id);if(u){$('#galBox').hidden=false;gal.insertAdjacentHTML('beforeend',`<figure><img src="${u}"><figcaption>${esc(x.desc||'Foto del vehículo')}</figcaption></figure>`)}}
+  for(const im of $$('#dview img[data-ph]')){const u=await photoURL(im.dataset.ph);if(u){im.src=u;im.onclick=()=>lightbox(u)}else im.remove()}
   $$('img',gal).forEach(i=>i.onclick=()=>lightbox(i.src));
   renderHistory($('#hist'),v.matricula,e.id,{title:'Otras visitas de este vehículo:',links:true});
   $('#edit').onclick=()=>viewForm(e);
   $('#print').onclick=()=>window.print();
-  $('#del').onclick=async()=>{if(!confirm('¿Eliminar esta entrada y sus fotos?'))return;for(const k in (e.fotos||{}))await DB.del('fotos',e.fotos[k]);await DB.del('entradas',e.id);ENT=ENT.filter(x=>x.id!==e.id);toast('Entrada eliminada');viewList()};
+  $('#del').onclick=async()=>{if(!confirm('¿Eliminar esta entrada y sus fotos?'))return;for(const id of [...Object.values(e.fotos||{}),...(e.extras||[]).map(x=>x.id),...(e.danosList||[]).map(d=>d.foto)].filter(Boolean))await DB.del('fotos',id);await DB.del('entradas',e.id);ENT=ENT.filter(x=>x.id!==e.id);toast('Entrada eliminada');viewList()};
   const save=async()=>{e.actualizado=new Date().toISOString();await DB.put('entradas',e);viewDetail(e.id)};
   if($('#reopen'))$('#reopen').onclick=async()=>{e.estado='taller';e.fechaSalida=null;await save();toast('Entrada abierta de nuevo')};
   if($('#out'))$('#out').onclick=()=>{
