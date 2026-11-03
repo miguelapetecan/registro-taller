@@ -40,6 +40,7 @@ summary{cursor:pointer;font-weight:600;color:var(--ac);margin-bottom:10px}
 .ph:hover{border-color:var(--ac);color:var(--ac)}
 .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .ph em{font-size:30px;display:block;font-style:normal}
+.ph .del{position:absolute;bottom:8px;left:8px;background:rgba(220,38,38,.92);color:#fff;font:600 12px/1 system-ui,sans-serif;padding:6px 11px;border-radius:99px;z-index:3;border:0;cursor:pointer}
 .ph .chg{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.65);color:#fff;font-size:12px;padding:3px 9px;border-radius:99px;z-index:2}
 .ai{margin-top:12px;padding:10px 12px;border-radius:10px;background:#f9fafb;font-size:14px}
 .ai.ok{background:var(--grnbg);color:var(--grn)}.ai.err{background:var(--redbg);color:var(--red)}
@@ -712,7 +713,7 @@ function renderHistory(el,plate,exclude,opts={}){
 function viewForm(existing){
   nav(existing?'':'new');
   const e=existing?structuredClone(existing):{id:uid(),fechaEntrada:new Date().toISOString(),estado:'taller',vehiculo:{},fotos:{},danado:false};
-  const v=e.vehiculo;const files={};const dirty=new Set();let readSeq=0;
+  const v=e.vehiculo;const files={},removed=new Set();const dirty=new Set();let readSeq=0;
   const fld=(k,l,val,a='')=>`<label class="f"><span>${l}</span><input data-v="${k}" value="${esc(val)}" ${a}></label>`;
   $('#app').innerHTML=`<h2>${existing?'Editar entrada':'Nueva entrada'}</h2>
   <section class="card"><h3><span class="step">1</span>Fotos</h3>
@@ -748,15 +749,18 @@ function viewForm(existing){
   // fotos
   $$('.ph').forEach(async box=>{
     const k=box.dataset.k,inp=$('input',box);
-    const show=src=>{let i=$('img',box);if(!i){i=document.createElement('img');box.appendChild(i);box.insertAdjacentHTML('beforeend','<span class="chg">Cambiar</span>')}i.src=src};
+    const show=src=>{let i=$('img',box);if(!i){i=document.createElement('img');box.appendChild(i);box.insertAdjacentHTML('beforeend','<span class="chg">Cambiar</span><button type="button" class="del">🗑 Borrar</button>');
+      $('.del',box).onclick=ev=>{ev.preventDefault();ev.stopPropagation();clear()}}i.src=src};
+    const clear=()=>{delete files[k];if(e.fotos[k])removed.add(k);inp.value='';$$('img,.chg,.del',box).forEach(n=>n.remove());
+      const ai=$('#ai');ai.className='ai';ai.textContent='Foto quitada. Puedes subir otra.';readSeq++};
     if(e.fotos[k]){const u=await photoURL(e.fotos[k]);if(u)show(u)}
-    inp.onchange=()=>{const f=inp.files[0];if(!f)return;files[k]=f;show(URL.createObjectURL(f));autoRead()};
+    inp.onchange=()=>{const f=inp.files[0];if(!f)return;files[k]=f;removed.delete(k);show(URL.createObjectURL(f));autoRead()};
   });
   async function autoRead(){
     const ai=$('#ai'),seq=++readSeq;ai.className='ai';ai.innerHTML='<span class="spin"></span>Preparando el lector…';
     const status=m=>{if(seq===readSeq)ai.innerHTML='<span class="spin"></span>'+esc(m)};
     try{
-      const list=[];for(const k of ['vehiculo','ficha']){if(files[k])list.push({k,blob:files[k]});else if(e.fotos[k]){const f=await DB.get('fotos',e.fotos[k]);if(f)list.push({k,blob:f.blob})}}
+      const list=[];for(const k of ['vehiculo','ficha']){if(files[k])list.push({k,blob:files[k]});else if(e.fotos[k]&&!removed.has(k)){const f=await DB.get('fotos',e.fotos[k]);if(f)list.push({k,blob:f.blob})}}
       const d=await readPhotos(list,status);if(seq!==readSeq)return;
       let n=0;
       for(const k of VKEYS){const val=String(d[k]??'').trim();const inp=$(`[data-v="${k}"]`);if(val&&inp&&!dirty.has(k)){inp.value=k==='matricula'?normP(val):val;n++}}
@@ -787,6 +791,7 @@ function viewForm(existing){
     if(!e.danado)e.danos='';
     const btn=$('#save');btn.disabled=true;btn.textContent='Guardando…';
     try{
+      for(const k of removed){if(files[k])continue;await DB.del('fotos',e.fotos[k]);delete urlCache[e.fotos[k]];delete e.fotos[k]}
       for(const k in files){const id=e.fotos[k]||uid();await DB.put('fotos',{id,blob:files[k]});delete urlCache[id];e.fotos[k]=id}
       e.actualizado=new Date().toISOString();await DB.put('entradas',e);
       const i=ENT.findIndex(x=>x.id===e.id);if(i>=0)ENT[i]=e;else ENT.push(e);
