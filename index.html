@@ -567,7 +567,7 @@ const gemKey=()=>store.get('tr_gkey');
 async function gemFetch(path,opt={}){
   const r=await fetch(GEM+path,{...opt,headers:{'content-type':'application/json','x-goog-api-key':gemKey(),...(opt.headers||{})}});
   const j=await r.json().catch(()=>({}));
-  if(!r.ok){const e=new Error(j?.error?.message||('Error '+r.status));e.status=r.status;throw e}
+  if(!r.ok){const e=new Error(j?.error?.message||('Error '+r.status));e.status=r.status;e.details=j?.error?.details||[];throw e}
   return j;
 }
 /* elige el modelo Flash más reciente disponible para la clave */
@@ -576,7 +576,7 @@ async function gemModels(){
   const ok=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace(/^models\//,''));
   const ver=n=>parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/)||[])[1]||0);
   const bad=/image|tts|audio|live|embed|vision|thinking|exp|learnlm|gemma|robotics|computer|native/;
-  const flash=ok.filter(n=>/gemini-.*flash/.test(n)&&!bad.test(n)).sort((a,b)=>(ver(b)-ver(a))||(/preview/.test(a)-/preview/.test(b))||(/lite/.test(a)-/lite/.test(b))||(a.length-b.length));
+  const flash=ok.filter(n=>/gemini-.*flash/.test(n)&&!bad.test(n)).sort((a,b)=>(/lite/.test(a)-/lite/.test(b))||(ver(b)-ver(a))||(/preview/.test(a)-/preview/.test(b))||(a.length-b.length));
   return flash.length?flash:ok.filter(n=>/gemini/.test(n)&&!bad.test(n));
 }
 async function toJpegB64(blob,max=2048){
@@ -595,29 +595,49 @@ PERMISO DE CIRCULACIÓN (códigos): A matrícula; B fecha de primera matriculaci
 FICHA TÉCNICA (tarjeta ITV): "Número de identificación" = bastidor (VIN de 17 caracteres, nunca contiene I, O ni Q); "Clasificación" (ej. TURISMO); Marca; Tipo y Variante -> tipo como "Tipo / Variante"; "Denominación comercial" = modelo; Tara (kg) = tara; MTMA/MMA (kg) = masa_max_tecnica; Neumáticos (ej. 195/55 R15 85V); Nº de asientos = plazas; Altura, Anchura, Longitud (mm); Motor: Marca = motor_marca, Tipo = codigo_motor; Nº cilindros/Cilindrada -> cilindros y cilindrada; Potencia fiscal/real (CV fiscales/kW) -> potencia_fiscal y potencia; contraseña de homologación = homologacion; la fecha al pie del documento = fecha_ficha. Combustible: dedúcelo si el tipo de motor lleva (G) gasolina o (D) diésel.
 
 Formato: fechas DD-MM-AAAA; números sin unidades (potencia en kW, cilindrada en cm³, masas en kg); anio = año de la primera matriculación, si no la de matriculación, si no la de la ficha. En "avisos" pon en una frase corta cualquier dato dudoso o ilegible y si la matrícula de la placa no coincide con la del documento.`;
-async function geminiRead(list,onStatus){
-  onStatus('Preparando las fotos para la IA…');
-  const parts=[{text:GEM_PROMPT}];
-  for(const p of list){parts.push({text:p.k==='vehiculo'?'Foto del vehículo:':'Foto del documento (permiso de circulación o ficha técnica):'});parts.push({inline_data:{mime_type:'image/jpeg',data:await toJpegB64(p.blob,p.k==='vehiculo'?1600:2400)}})}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+/* modelos que han agotado el límite gratuito: se saltan hasta que se renueva */
+const gemCool=()=>{try{return JSON.parse(store.get('tr_gcool')||'{}')}catch(e){return {}}};
+function setCool(m,until){const c=gemCool(),now=Date.now();for(const k in c)if(c[k]<now)delete c[k];if(until)c[m]=until;else delete c[m];store.set('tr_gcool',JSON.stringify(c))}
+/* el límite diario de Google se renueva a medianoche de California (sobre las 9:00 en España) */
+function nextPacificMidnight(){const now=new Date();const pt=new Date(now.toLocaleString('en-US',{timeZone:'America/Los_Angeles'}));const m=new Date(pt);m.setHours(24,5,0,0);return m.getTime()+(now-pt)}
+function quotaInfo(e){const msg=String(e.message||''),det=JSON.stringify(e.details||[]);
+  const r=(det.match(/"retryDelay":"([\d.]+)s"/)||msg.match(/retry in ([\d.]+)\s*s/i)||[])[1];
+  return {perDay:/PerDay|per day/i.test(det+msg),zero:/limit:\s*0\b/.test(msg),retry:r?parseFloat(r)*1000:0}}
+async function gemGenerate(parts,onStatus){
   const body=JSON.stringify({contents:[{role:'user',parts}],generationConfig:{temperature:0,responseMimeType:'application/json'}});
-  const cached=store.get('tr_gmodel');let models=cached?[cached]:[],listed=false;
+  const cached=store.get('tr_gmodel');const models=cached?[cached]:[];let listed=false;
   const more=async()=>{if(listed)return;listed=true;onStatus('Conectando con Gemini…');for(const m of await gemModels())if(!models.includes(m))models.push(m)};
-  if(!models.length)await more();
-  let lastErr=new Error('tu clave no tiene modelos Gemini disponibles');
-  for(let i=0;i<models.length&&i<5;i++){
-    const m=models[i];
-    try{
-      onStatus('Leyendo con IA (Gemini)…');
-      const j=await gemFetch(`/models/${m}:generateContent`,{method:'POST',body});
-      const txt=(j.candidates?.[0]?.content?.parts||[]).filter(x=>!x.thought).map(x=>x.text||'').join('');
-      const mm=txt.match(/\{[\s\S]*\}/);if(!mm)throw new Error(j.candidates?.[0]?.finishReason==='SAFETY'?'la IA rechazó la imagen':'respuesta vacía de la IA');
-      store.set('tr_gmodel',m);
-      return JSON.parse(mm[0]);
-    }catch(e){lastErr=e;if([400,401,403].includes(e.status))throw e;if(i===models.length-1)await more().catch(()=>{})}
+  let lastErr=null,tries=0;
+  for(let i=0;tries<6;i++){
+    if(i>=models.length){if(listed)break;try{await more()}catch(e){lastErr=lastErr||e;break}if(i>=models.length)break}
+    const m=models[i];const cool=gemCool()[m];if(cool&&cool>Date.now())continue;
+    let retried=false;
+    for(;;){
+      tries++;
+      try{
+        onStatus('Leyendo con IA (Gemini)…');
+        const j=await gemFetch(`/models/${m}:generateContent`,{method:'POST',body});
+        const txt=(j.candidates?.[0]?.content?.parts||[]).filter(x=>!x.thought).map(x=>x.text||'').join('');
+        const mm=txt.match(/\{[\s\S]*\}/);if(!mm)throw new Error(j.candidates?.[0]?.finishReason==='SAFETY'?'la IA rechazó la imagen':'respuesta vacía de la IA');
+        store.set('tr_gmodel',m);setCool(m,0);
+        return {data:JSON.parse(mm[0]),model:m};
+      }catch(e){
+        lastErr=e;
+        if((e.status===400&&/API.?key/i.test(e.message))||e.status===401||e.status===403)throw e;
+        if(e.status===429){const q=quotaInfo(e);
+          if(!q.perDay&&!q.zero&&!retried&&q.retry&&q.retry<=25000){retried=true;onStatus(`Gemini pide esperar ${Math.ceil(q.retry/1000)} s…`);await sleep(q.retry+500);continue}
+          setCool(m,(q.perDay||q.zero)?nextPacificMidnight():Date.now()+60000);
+        }
+        break;
+      }
+    }
   }
-  store.set('tr_gmodel','');
+  const cm=store.get('tr_gmodel');if(cm&&gemCool()[cm])store.set('tr_gmodel','');
+  if(!lastErr||lastErr.status===429){const e=new Error('cuota agotada');e.status=429;throw e}
   throw lastErr;
 }
+function whyGem(e){return e.status===429?'se ha agotado el límite gratuito de Gemini por hoy (se renueva sobre las 9:00)':(e.status===400&&/API.?key/i.test(e.message))||e.status===401||e.status===403?'la clave de Gemini no es válida':'no se pudo conectar con Gemini ('+e.message+')'}
 function tidyAI(d){
   const o={};
   for(const [k,v] of Object.entries(d||{}))if(v!=null&&String(v).trim()&&!/^(N\/?A|-+|NULL|NO VISIBLE|ILEGIBLE)$/i.test(String(v).trim()))o[k]=String(v).trim();
@@ -646,15 +666,70 @@ async function readPhotosLocal(list,onStatus){
   return out;
 }
 
-async function readPhotos(list,onStatus){
+/* ---------- matrícula: foto completa + recortes ampliados de la placa ---------- */
+const PLATE_RE=/^(\d{4}[BCDFGHJKLMNPRSTVWXYZ]{3}|[A-Z]{1,2}\d{4}[A-Z]{1,2})$/;
+const PLATE_PROMPT=`Eres un mecánico de un taller español. Transcribe la matrícula de la placa del vehículo de la foto.
+Reglas:
+- Formato actual: 4 números + 3 letras consonantes (sin vocales, sin Ñ, sin Q), por ejemplo 1234BCD. Formato antiguo provincial: 1-2 letras + 4 números + 1-2 letras, por ejemplo M1234AB.
+- La franja azul de la izquierda con la "E" y las estrellas de la UE NO forma parte de la matrícula: nunca incluyas esa E.
+- Escribe solo letras y números en mayúsculas, sin espacios ni guiones.
+- Te envío la foto completa y, si se han encontrado, recortes ampliados de zonas donde puede estar la placa. Los recortes son automáticos y pueden estar equivocados: compruébalos con la foto completa.
+- No inventes: si no se lee bien, pon tu mejor lectura y marca legible "dudosa"; si no hay placa visible, deja matricula vacía y legible "no".
+Devuelve SOLO este JSON: {"matricula":"","color":"","legible":"si"}  (color = color de la carrocería en español).`;
+function plateCropColor(bmp,b){const px=b.w*0.12,py=b.h*0.4;const sx=Math.max(0,b.x-px),sy=Math.max(0,b.y-py),sw=Math.min(bmp.width-sx,b.w+2*px),sh=Math.min(bmp.height-sy,b.h+2*py);const k=Math.min(5,Math.max(1,280/sh));return drawScaled(bmp,sx,sy,sw,sh,Math.round(sw*k),Math.round(sh*k))}
+async function readVehicle(blob,onStatus){
+  const av=[];
   if(gemKey()){
-    try{const d=tidyAI(await geminiRead(list,onStatus));d._motor='IA (Gemini)';return d}
-    catch(e){
-      const why=e.status===429?'se ha agotado el límite gratuito de Gemini por ahora':e.status===400||e.status===401||e.status===403?'la clave de Gemini no es válida':'no se pudo conectar con Gemini ('+e.message+')';
-      const d=await readPhotosLocal(list,onStatus);d._motor='lector local';d.avisos=[`Se ha usado el lector local porque ${why}.`,d.avisos].filter(Boolean).join(' ');return d;
-    }
+    try{
+      onStatus('Preparando la foto del vehículo…');
+      const parts=[{text:PLATE_PROMPT},{text:'Foto completa del vehículo:'},{inline_data:{mime_type:'image/jpeg',data:await toJpegB64(blob,2048)}}];
+      try{const bmp=await createImageBitmap(blob);plateBoxes(bmp).slice(0,2).forEach((b,i)=>{parts.push({text:`Recorte ${i+1} (posible placa, ampliado):`});parts.push({inline_data:{mime_type:'image/jpeg',data:plateCropColor(bmp,b).toDataURL('image/jpeg',0.92).split(',')[1]}})})}catch(e){}
+      const {data,model}=await gemGenerate(parts,onStatus);
+      const out={_motor:'IA ('+model+')'};if(data.color)out.color=String(data.color).toUpperCase();
+      const p=cleanPlate(data.matricula||'');
+      if(PLATE_RE.test(p)){out.matricula=p;if(/dud/i.test(data.legible||''))av.push('La IA tiene dudas con la matrícula: compruébala.');out.avisos=av.join(' ');return out}
+      onStatus('La IA no ve clara la placa; probando con el lector local…');
+      const lp=await readVehiclePlate(blob,onStatus);OCR_PROG=null;
+      if(lp){out.matricula=lp;out._motor+=' + lector local';av.push('La IA no pudo leer la placa; la matrícula es del lector local, compruébala.')}
+      else av.push('No se ha podido leer la placa en la foto del vehículo.');
+      out.avisos=av.join(' ');return out;
+    }catch(e){av.push(`Matrícula leída con el lector local porque ${whyGem(e)}.`)}
   }
-  const d=await readPhotosLocal(list,onStatus);d._motor='lector local';return d;
+  const p=await readVehiclePlate(blob,onStatus);OCR_PROG=null;
+  if(!p)av.push('No se ha encontrado la placa en la foto del vehículo.');
+  return {matricula:p,_motor:'lector local',avisos:av.join(' '),_fallback:!!gemKey()};
+}
+async function readDoc(blob,onStatus){
+  let why='';
+  if(gemKey()){
+    try{
+      onStatus('Preparando el documento para la IA…');
+      const parts=[{text:GEM_PROMPT},{text:'Foto del documento (permiso de circulación o ficha técnica):'},{inline_data:{mime_type:'image/jpeg',data:await toJpegB64(blob,2400)}}];
+      const {data,model}=await gemGenerate(parts,onStatus);
+      const d=tidyAI(data);d._motor='IA ('+model+')';return d;
+    }catch(e){why=whyGem(e)}
+  }
+  const d=await readDocument(blob,onStatus);OCR_PROG=null;const av=[];
+  if(why)av.push(`Documento leído con el lector local porque ${why}.`);
+  if(d._score<3)av.push('Se ha leído poco del documento; prueba con una foto más cercana, recta y sin reflejos.');
+  delete d._score;delete d._tipo;d._motor='lector local';d.avisos=av.join(' ');d._fallback=!!why;return d;
+}
+/* cada foto se lee una sola vez (no se gasta cuota repitiendo la misma foto) */
+const READ_CACHE=new Map();
+async function readPhotos(list,onStatus){
+  const res={};
+  for(const p of list){
+    let pr=READ_CACHE.get(p.key);
+    if(!pr){pr=(p.k==='vehiculo'?readVehicle:readDoc)(p.blob,onStatus);READ_CACHE.set(p.key,pr);pr.catch(()=>READ_CACHE.delete(p.key))}
+    res[p.k]=await pr;
+  }
+  const v=res.vehiculo||{},f=res.ficha||{};
+  const out={...f};const av=[v.avisos,f.avisos].filter(Boolean);
+  if(v.color)out.color=v.color;
+  if(v.matricula){if(f.matricula&&normP(f.matricula)!==v.matricula)av.push(`La placa del coche dice ${v.matricula} y el documento ${normP(f.matricula)}; se usa la de la placa.`);out.matricula=v.matricula}
+  out._motor=[...new Set([v._motor,f._motor].filter(Boolean))].join(' y ');
+  out._fallback=!!(v._fallback||f._fallback);out.avisos=av.join(' ');
+  return out;
 }
 /* ---------- resumen local de visitas anteriores ---------- */
 function summarize(h){
@@ -804,17 +879,19 @@ function viewForm(existing){
     if(e.fotos[k]){const u=await photoURL(e.fotos[k]);if(u)show(u)}
     inp.onchange=()=>{const f=inp.files[0];if(!f)return;files[k]=f;removed.delete(k);show(URL.createObjectURL(f));autoRead()};
   });
-  async function autoRead(){
+  async function autoRead(force){
     const ai=$('#ai'),seq=++readSeq;ai.className='ai';ai.innerHTML='<span class="spin"></span>Preparando el lector…';
     const status=m=>{if(seq===readSeq)ai.innerHTML='<span class="spin"></span>'+esc(m)};
     try{
-      const list=[];for(const k of ['vehiculo','ficha']){if(files[k])list.push({k,blob:files[k]});else if(e.fotos[k]&&!removed.has(k)){const f=await DB.get('fotos',e.fotos[k]);if(f)list.push({k,blob:f.blob})}}
+      const list=[];for(const k of ['vehiculo','ficha']){if(files[k])list.push({k,blob:files[k],key:files[k]});else if(e.fotos[k]&&!removed.has(k)){const f=await DB.get('fotos',e.fotos[k]);if(f)list.push({k,blob:f.blob,key:'db:'+e.fotos[k]})}}
+      if(force)for(const p of list)READ_CACHE.delete(p.key);
       const d=await readPhotos(list,status);if(seq!==readSeq)return;
       let n=0;
       for(const k of VKEYS){const val=String(d[k]??'').trim();const inp=$(`[data-v="${k}"]`);if(val&&inp&&!dirty.has(k)){inp.value=k==='matricula'?normP(val):val;n++}}
       const c=String(d.cliente??'').trim();const ci=$('[data-e="cliente"]');if(c&&!dirty.has('cliente')){ci.value=c;n++}
       if(FICHA.some(([k])=>d[k]))$('details').open=true;
-      ai.className=n?'ai ok':'ai err';ai.innerHTML=`${n?'✓ '+n+' datos leídos con '+esc(d._motor||'')+'. Revísalos antes de guardar.':'No se han podido leer datos. Rellénalos a mano o prueba con otra foto.'}${d.avisos?`<div style="color:#9a3412;margin-top:4px">⚠️ ${esc(d.avisos)}</div>`:''}`;
+      ai.className=n?'ai ok':'ai err';ai.innerHTML=`${n?'✓ '+n+' datos leídos con '+esc(d._motor||'')+'. Revísalos antes de guardar.':'No se han podido leer datos. Rellénalos a mano o prueba con otra foto.'}${d.avisos?`<div style="color:#9a3412;margin-top:4px">⚠️ ${esc(d.avisos)}</div>`:''}<div style="margin-top:6px"><button type="button" class="link" id="reread">↻ Volver a leer las fotos</button></div>`;
+      $('#reread').onclick=()=>autoRead(true);
       checkHist();
     }catch(err){if(seq!==readSeq)return;ai.className='ai err';ai.textContent='No se pudieron leer los datos: '+err.message}
   }
@@ -920,7 +997,7 @@ function viewSettings(){
   $('#gsave').onclick=async()=>{
     const k=$('#gk').value.trim(),st=$('#gst');st.style.display='block';
     if(!k){st.className='ai err';st.textContent='Pega primero la clave.';return}
-    store.set('tr_gkey',k);store.set('tr_gmodel','');st.className='ai';st.innerHTML='<span class="spin"></span>Comprobando la clave…';
+    store.set('tr_gkey',k);store.set('tr_gmodel','');store.set('tr_gcool','{}');st.className='ai';st.innerHTML='<span class="spin"></span>Comprobando la clave…';
     try{const m=await gemModels();if(!m.length)throw new Error('la clave no tiene modelos disponibles');store.set('tr_gmodel',m[0]);st.className='ai ok';st.textContent='✓ Clave correcta. Se usará el modelo '+m[0]+'.'}
     catch(e){st.className='ai err';st.textContent='No funciona: '+e.message}
   };
